@@ -21,7 +21,7 @@ var isPaused = false;  // New flag to track pause state
 function startGame() {
     myGamePiece = new component(30, 30, "pink", 10, 120);
     myGamePiece.gravity = 0.05;
-    myScore = new component("30px", "Consolas", "black", 280, 40, "text");
+    myScore = new component("20px", "Ariel", "black", 350, 40, "text");
     myScore.text = "SCORE: 0"; // Initialize score text
     myGameArea.start();
 }
@@ -65,9 +65,9 @@ function restartGame() {
     myGameArea.frameNo = 0;
 
     // Reinitialize game components
-    myGamePiece = new component(30, 30, "red", 10, 120);
+    myGamePiece = new component(30, 30, "pink", 10, 120);
     myGamePiece.gravity = 0.05;
-    myScore = new component("30px", "Consolas", "black", 280, 40, "text");
+    myScore = new component("20px", "Ariel", "black", 350, 40, "text");
     myScore.text = "SCORE: 0";
 
     // Start the game
@@ -182,5 +182,3 @@ function accelerate(n) {
 <p>Click PAUSE/RESUME to pause or resume the game</p>
 </body>
 </html>
-
-
