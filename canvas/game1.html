@@ -11,22 +11,33 @@ canvas {
 </head>
 <body onload="startGame()">
 <script>
-
-
 var myGamePiece;
 var myObstacles = [];
 var myScore;
-var isPaused = false;  // New flag to track pause state
+var isPaused = false;  // Flag to track pause state
+var backgroundMusic;   // Variable to store background music
 
 function startGame() {
     myGamePiece = new component(30, 30, "pink", 10, 120);
     myGamePiece.gravity = 0.05;
-    myScore = new component("20px", "Ariel", "black", 350, 40, "text");
+    myScore = new component("20px", "Arial", "black", 350, 40, "text");
     myScore.text = "SCORE: 0"; // Initialize score text
     myGameArea.start();
+
+    // Play background music when the game starts
+    backgroundMusic = new Audio('https://docs.google.com/uc?export=download&id=1w11Rx3AsnZbOU_xM1t6dOMQNt-7I7Iuf');
+    backgroundMusic.loop = true;  // Make the music loop
+    backgroundMusic.play();
+
+    // Add event listeners for key controls
+    window.addEventListener('keydown', function (e) {
+        myGameArea.keys = (myGameArea.keys || []);
+        myGameArea.keys[e.keyCode] = true;
+    })
+    window.addEventListener('keyup', function (e) {
+        myGameArea.keys[e.keyCode] = false;
+    })
 }
-
-
 
 var myGameArea = {
     canvas : document.createElement("canvas"),
@@ -40,6 +51,7 @@ var myGameArea = {
     },
     stop : function() {
         clearInterval(this.interval);  // Stop the game loop
+        backgroundMusic.pause();  // Stop the music when the game is stopped
     },
     clear : function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -47,18 +59,19 @@ var myGameArea = {
     pause : function() {
         if (isPaused) {
             this.interval = setInterval(updateGameArea, 20);  // Resume game loop
+            backgroundMusic.play();  // Resume music
         } else {
             clearInterval(this.interval);  // Pause game loop
+            backgroundMusic.pause();  // Pause music
         }
         isPaused = !isPaused;  // Toggle pause state
-        
-        return 0;
     }
 }
 
 function restartGame() {
-    // Stop the current game loop
+    // Stop the current game loop and reset the background music
     myGameArea.stop();
+    backgroundMusic.currentTime = 0;  // Restart music
 
     // Reset game variables
     myObstacles = [];
@@ -67,7 +80,7 @@ function restartGame() {
     // Reinitialize game components
     myGamePiece = new component(30, 30, "pink", 10, 120);
     myGamePiece.gravity = 0.05;
-    myScore = new component("20px", "Ariel", "black", 350, 40, "text");
+    myScore = new component("20px", "Arial", "black", 350, 40, "text");
     myScore.text = "SCORE: 0";
 
     // Start the game
@@ -135,6 +148,8 @@ function component(width, height, color, x, y, type) {
 }
 
 function updateGameArea() {
+    if (isPaused) return;  // Don't update if the game is paused
+    
     var x, height, gap, minHeight, maxHeight, minGap, maxGap;
     for (i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
@@ -158,6 +173,15 @@ function updateGameArea() {
         myObstacles[i].x += -1;
         myObstacles[i].update();
     }
+
+    // Check for key inputs for movement
+    myGamePiece.speedX = 0;
+    myGamePiece.speedY = 0;
+    if (myGameArea.keys && myGameArea.keys[37] || myGameArea.keys[65]) {myGamePiece.speedX = -1; }  // Left Arrow or 'A'
+    if (myGameArea.keys && myGameArea.keys[39] || myGameArea.keys[68]) {myGamePiece.speedX = 1; }   // Right Arrow or 'D'
+    if (myGameArea.keys && myGameArea.keys[38] || myGameArea.keys[87]) {myGamePiece.speedY = -10; }  // Up Arrow or 'W'
+    if (myGameArea.keys && myGameArea.keys[40] || myGameArea.keys[83]) {myGamePiece.speedY = 10; }   // Down Arrow or 'S'
+
     myScore.text = "SCORE: " + myGameArea.frameNo;
     myScore.update();
     myGamePiece.newPos();
@@ -174,7 +198,7 @@ function accelerate(n) {
 }
 </script>
 <br>
-<button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>
+
 <button onclick="restartGame()">RESTART</button>
 <button onclick="myGameArea.pause()">PAUSE/RESUME</button> <!-- Added Pause/Resume Button -->
 <p>Use the ACCELERATE button to stay in the air</p>
