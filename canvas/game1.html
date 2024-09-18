@@ -20,7 +20,7 @@ var crashSound;        // Variable to store the crash sound effect
 var backgroundImg;    // Variable to store the background image
 
 function startGame() {
-    myGamePiece = new component(30, 30, "yellow", 10, 120);
+  	myGamePiece = new component(30, 30, "smiley.gif", 10, 120, "image");
     myGamePiece.gravity = 0.05;
     myScore = new component("20px", "Arial", "yellow", 350, 40, "text");
     myScore.text = "SCORE: 0"; // Initialize score text
@@ -94,6 +94,36 @@ function restartGame() {
 
     // Start the game
     myGameArea.start();
+}
+
+function component(width, height, color, x, y, type) {
+    this.type = type;
+    if (type == "image") {
+        this.image = new Image();
+        this.image.src = color;
+    }
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;    
+    this.update = function() {
+        ctx = myGameArea.context;
+        if (type == "image") {
+            ctx.drawImage(this.image, 
+                this.x, 
+                this.y,
+                this.width, this.height);
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    }
+    this.newPos = function() {
+        this.x += this.speedX;
+        this.y += this.speedY;        
+    }
 }
 
 function component(width, height, color, x, y, type) {
