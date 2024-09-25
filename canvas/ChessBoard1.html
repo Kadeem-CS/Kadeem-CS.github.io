@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chessboard with Legal Moves</title>
+  <title>Chessboard with Win Condition</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
@@ -96,8 +96,11 @@
       const [game, setGame] = React.useState(initialGameState);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
       const [currentPlayer, setCurrentPlayer] = React.useState('white'); // Track whose turn it is
+      const [winner, setWinner] = React.useState(null); // Track the winner
 
       function handleClick(row, col) {
+        if (winner) return; // If there is a winner, stop the game
+
         if (selectedSquare) {
           const [selectedRow, selectedCol] = selectedSquare;
           const piece = game[selectedRow][selectedCol];
@@ -110,6 +113,13 @@
 
           if (isValidMove(piece, selectedRow, selectedCol, row, col, game)) {
             const newGame = game.map(row => row.slice());
+            const destinationPiece = newGame[row][col];
+
+            // Check if the captured piece is the King
+            if (destinationPiece.toLowerCase() === 'k') {
+              setWinner(currentPlayer); // Current player wins if the King is captured
+            }
+
             newGame[row][col] = piece;
             newGame[selectedRow][selectedCol] = '';
             setGame(newGame);
@@ -131,7 +141,7 @@
 
       return (
         <div>
-          <h2>{currentPlayer === 'white' ? "White's Turn" : "Black's Turn"}</h2>
+          {winner ? <h2>{winner === 'white' ? "White Wins!" : "Black Wins!"}</h2> : <h2>{currentPlayer === 'white' ? "White's Turn" : "Black's Turn"}</h2>}
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
         </div>
       );
