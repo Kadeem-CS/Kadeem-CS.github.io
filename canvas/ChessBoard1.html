@@ -95,27 +95,43 @@
     function Game() {
       const [game, setGame] = React.useState(initialGameState);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
+      const [currentPlayer, setCurrentPlayer] = React.useState('white'); // Track whose turn it is
 
       function handleClick(row, col) {
         if (selectedSquare) {
           const [selectedRow, selectedCol] = selectedSquare;
           const piece = game[selectedRow][selectedCol];
+          const isWhitePiece = piece === piece.toUpperCase();
+
+          // Ensure the move is by the correct player
+          if ((currentPlayer === 'white' && !isWhitePiece) || (currentPlayer === 'black' && isWhitePiece)) {
+            return; // Invalid move, not player's turn
+          }
+
           if (isValidMove(piece, selectedRow, selectedCol, row, col, game)) {
             const newGame = game.map(row => row.slice());
             newGame[row][col] = piece;
             newGame[selectedRow][selectedCol] = '';
             setGame(newGame);
+            setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white'); // Switch turn
           }
           setSelectedSquare(null);
         } else {
           if (game[row][col]) {
-            setSelectedSquare([row, col]);
+            const piece = game[row][col];
+            const isWhitePiece = piece === piece.toUpperCase();
+
+            // Allow selection only if it's the current player's piece
+            if ((currentPlayer === 'white' && isWhitePiece) || (currentPlayer === 'black' && !isWhitePiece)) {
+              setSelectedSquare([row, col]);
+            }
           }
         }
       }
 
       return (
         <div>
+          <h2>{currentPlayer === 'white' ? "White's Turn" : "Black's Turn"}</h2>
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
         </div>
       );
