@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chessboard with Win Condition and Restart</title>
+  <title>Chess with Check Rule</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
@@ -39,7 +39,6 @@
       'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'
     };
 
-    // Check if a move is valid based on chess rules
     function isValidMove(piece, fromRow, fromCol, toRow, toCol, game) {
       const destinationPiece = game[toRow][toCol];
       const isWhite = piece === piece.toUpperCase();
@@ -50,11 +49,11 @@
       switch (piece.toLowerCase()) {
         case 'p': // Pawn
           if (isWhite) {
-            if (deltaY === -1 && deltaX === 0 && !destinationPiece) return true; // Move forward
+            if (deltaY === -1 && deltaX === 0 && !destinationPiece) return true; // Move forward, no capture
             if (deltaY === -1 && Math.abs(deltaX) === 1 && isEnemy) return true; // Capture diagonally
             if (fromRow === 6 && deltaY === -2 && deltaX === 0 && !game[toRow][toCol] && !game[toRow + 1][toCol]) return true; // Move two squares from start
           } else {
-            if (deltaY === 1 && deltaX === 0 && !destinationPiece) return true; // Move forward
+            if (deltaY === 1 && deltaX === 0 && !destinationPiece) return true; // Move forward, no capture
             if (deltaY === 1 && Math.abs(deltaX) === 1 && isEnemy) return true; // Capture diagonally
             if (fromRow === 1 && deltaY === 2 && deltaX === 0 && !game[toRow][toCol] && !game[toRow - 1][toCol]) return true; // Move two squares from start
           }
@@ -77,7 +76,6 @@
       }
     }
 
-    // Check if the path between two squares is clear (for rook, bishop, queen)
     function isPathClear(fromRow, fromCol, toRow, toCol, game) {
       const stepX = Math.sign(toCol - fromCol);
       const stepY = Math.sign(toRow - fromRow);
@@ -90,6 +88,36 @@
         y += stepY;
       }
       return true;
+    }
+
+    function isInCheck(playerColor, game) {
+      const kingPosition = findKingPosition(playerColor, game);
+      const opponentColor = playerColor === 'white' ? 'black' : 'white';
+
+      // Check if any opponent pieces can move to the king's position
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+          const piece = game[row][col];
+          if ((opponentColor === 'white' && piece === piece.toUpperCase()) || (opponentColor === 'black' && piece === piece.toLowerCase())) {
+            if (isValidMove(piece, row, col, kingPosition[0], kingPosition[1], game)) {
+              return true; // The king is in check
+            }
+          }
+        }
+      }
+      return false; // The king is not in check
+    }
+
+    function findKingPosition(playerColor, game) {
+      const kingSymbol = playerColor === 'white' ? 'K' : 'k';
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+          if (game[row][col] === kingSymbol) {
+            return [row, col]; // Return the position of the king
+          }
+        }
+      }
+      return null; // King not found (should not happen)
     }
 
     function Game() {
@@ -122,8 +150,14 @@
 
             newGame[row][col] = piece;
             newGame[selectedRow][selectedCol] = '';
-            setGame(newGame);
-            setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white'); // Switch turn
+            
+            // Check if the move puts the current player's king in check
+            if (!isInCheck(currentPlayer, newGame)) {
+              setGame(newGame);
+              setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white'); // Switch turn
+            } else {
+              alert("Move puts your king in check! Try a different move.");
+            }
           }
           setSelectedSquare(null);
         } else {
@@ -139,19 +173,17 @@
         }
       }
 
-      // Restart the game
       function restartGame() {
         setGame(initialGameState);
         setCurrentPlayer('white');
         setWinner(null);
-        setSelectedSquare(null);
       }
 
       return (
         <div>
-          {winner ? <h2>{winner === 'white' ? "White Wins!" : "Black Wins!"}</h2> : <h2>{currentPlayer === 'white' ? "White's Turn" : "Black's Turn"}</h2>}
+          <h2>{winner ? `${winner.charAt(0).toUpperCase() + winner.slice(1)} wins!` : `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`}</h2>
+          <button onClick={restartGame}>Restart Game</button>
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
-          <button onClick={restartGame} style={{ marginTop: '20px', padding: '10px 20px', fontSize: '16px' }}>Restart Game</button>
         </div>
       );
     }
