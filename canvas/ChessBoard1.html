@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chessboard with Win Condition</title>
+  <title>Chessboard with Win Condition and Restart</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
@@ -139,10 +139,19 @@
         }
       }
 
+      // Restart the game
+      function restartGame() {
+        setGame(initialGameState);
+        setCurrentPlayer('white');
+        setWinner(null);
+        setSelectedSquare(null);
+      }
+
       return (
         <div>
           {winner ? <h2>{winner === 'white' ? "White Wins!" : "Black Wins!"}</h2> : <h2>{currentPlayer === 'white' ? "White's Turn" : "Black's Turn"}</h2>}
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
+          <button onClick={restartGame} style={{ marginTop: '20px', padding: '10px 20px', fontSize: '16px' }}>Restart Game</button>
         </div>
       );
     }
