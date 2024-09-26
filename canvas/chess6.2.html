@@ -44,6 +44,7 @@
     function Game() {
       const [game, setGame] = React.useState(initialGameState);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
+      
       const [step, setStep] = React.useState(0);
       
       // Handle square click for moving pieces
@@ -79,7 +80,7 @@
       return (
         <div>
           
-          <button> Which step </button>
+          <button> {} </button>
           
           {game.map((row, rowIndex) => (
             <div key={rowIndex} style={{ display: 'flex' }}>
