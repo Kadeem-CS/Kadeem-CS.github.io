@@ -151,73 +151,89 @@
       return null; // King not found (should not happen)
     }
 
-    function Game() {
-      const [game, setGame] = React.useState(initialGameState);
-      const [selectedSquare, setSelectedSquare] = React.useState(null);
-      const [currentPlayer, setCurrentPlayer] = React.useState('white'); // Track whose turn it is
-      const [winner, setWinner] = React.useState(null); // Track the winner
+   function Game() {
+  const [game, setGame] = React.useState(initialGameState);
+  const [selectedSquare, setSelectedSquare] = React.useState(null);
+  const [currentPlayer, setCurrentPlayer] = React.useState('white'); // Track whose turn it is
+  const [winner, setWinner] = React.useState(null); // Track the winner
 
-      function handleClick(row, col) {
-        if (winner) return; // If there is a winner, stop the game
+  // Text-to-speech function
+  function speak(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(utterance);
+  }
 
-        if (selectedSquare) {
-          const [selectedRow, selectedCol] = selectedSquare;
-          const piece = game[selectedRow][selectedCol];
-          const isWhitePiece = piece === piece.toUpperCase();
+  // Call speak() when the turn changes
+  React.useEffect(() => {
+    if (winner) {
+      speak(`${winner.charAt(0).toUpperCase() + winner.slice(1)} wins!`);
+    } else {
+      speak(`${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s turn`);
+    }
+  }, [currentPlayer, winner]);
 
-          // Ensure the move is by the correct player
-          if ((currentPlayer === 'white' && !isWhitePiece) || (currentPlayer === 'black' && isWhitePiece)) {
-            return; // Invalid move, not player's turn
-          }
+  function handleClick(row, col) {
+    if (winner) return; // If there is a winner, stop the game
 
-          if (isValidMove(piece, selectedRow, selectedCol, row, col, game)) {
-            const newGame = game.map(row => row.slice());
-            const destinationPiece = newGame[row][col];
+    if (selectedSquare) {
+      const [selectedRow, selectedCol] = selectedSquare;
+      const piece = game[selectedRow][selectedCol];
+      const isWhitePiece = piece === piece.toUpperCase();
 
-            // Check if the captured piece is the King
-            if (destinationPiece.toLowerCase() === 'k') {
-              setWinner(currentPlayer); // Current player wins if the King is captured
-            }
+      // Ensure the move is by the correct player
+      if ((currentPlayer === 'white' && !isWhitePiece) || (currentPlayer === 'black' && isWhitePiece)) {
+        return; // Invalid move, not player's turn
+      }
 
-            newGame[row][col] = piece;
-            newGame[selectedRow][selectedCol] = '';
-            
-            // Check if the move puts the current player's king in check
-            if (!isInCheck(currentPlayer, newGame)) {
-              setGame(newGame);
-              setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white'); // Switch turn
-            } else {
-              alert("Move puts your king in check! Try a different move.");
-            }
-          }
-          setSelectedSquare(null);
+      if (isValidMove(piece, selectedRow, selectedCol, row, col, game)) {
+        const newGame = game.map(row => row.slice());
+        const destinationPiece = newGame[row][col];
+
+        // Check if the captured piece is the King
+        if (destinationPiece.toLowerCase() === 'k') {
+          setWinner(currentPlayer); // Current player wins if the King is captured
+        }
+
+        newGame[row][col] = piece;
+        newGame[selectedRow][selectedCol] = '';
+
+        // Check if the move puts the current player's king in check
+        if (!isInCheck(currentPlayer, newGame)) {
+          setGame(newGame);
+          setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white'); // Switch turn
         } else {
-          if (game[row][col]) {
-            const piece = game[row][col];
-            const isWhitePiece = piece === piece.toUpperCase();
-
-            // Allow selection only if it's the current player's piece
-            if ((currentPlayer === 'white' && isWhitePiece) || (currentPlayer === 'black' && !isWhitePiece)) {
-              setSelectedSquare([row, col]);
-            }
-          }
+          alert("Move puts your king in check! Try a different move.");
         }
       }
+      setSelectedSquare(null);
+    } else {
+      if (game[row][col]) {
+        const piece = game[row][col];
+        const isWhitePiece = piece === piece.toUpperCase();
 
-      function restartGame() {
-        setGame(initialGameState);
-        setCurrentPlayer('white');
-        setWinner(null);
+        // Allow selection only if it's the current player's piece
+        if ((currentPlayer === 'white' && isWhitePiece) || (currentPlayer === 'black' && !isWhitePiece)) {
+          setSelectedSquare([row, col]);
+        }
       }
-
-      return (
-        <div>
-          <h2>{winner ? `${winner.charAt(0).toUpperCase() + winner.slice(1)} wins!` : `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`}</h2>
-          <button onClick={restartGame}>Restart Game</button>
-          <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
-        </div>
-      );
     }
+  }
+
+  function restartGame() {
+    setGame(initialGameState);
+    setCurrentPlayer('white');
+    setWinner(null);
+  }
+
+  return (
+    <div>
+      <h2>{winner ? `${winner.charAt(0).toUpperCase() + winner.slice(1)} wins!` : `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`}</h2>
+      <button onClick={restartGame}>Restart Game</button>
+      <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
+    </div>
+  );
+}
+
 
     function Board({ game, onSquareClick, selectedSquare }) {
       return (
