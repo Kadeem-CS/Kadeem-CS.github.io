@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -40,41 +41,47 @@
     };
 
     function isValidMove(piece, fromRow, fromCol, toRow, toCol, game) {
-      const destinationPiece = game[toRow][toCol];
-      const isWhite = piece === piece.toUpperCase();
-      const isEnemy = isWhite ? destinationPiece === destinationPiece.toLowerCase() : destinationPiece === destinationPiece.toUpperCase();
-      const deltaX = toCol - fromCol;
-      const deltaY = toRow - fromRow;
+  const destinationPiece = game[toRow][toCol];
+  const isWhite = piece === piece.toUpperCase(); // True if the piece is white
+  const isDestinationPieceWhite = destinationPiece === destinationPiece.toUpperCase(); // True if the destination piece is white
+  
+  // Prevent capturing same color pieces
+  if (destinationPiece && isWhite === isDestinationPieceWhite) {
+    return false; // Can't capture your own piece
+  }
 
-      switch (piece.toLowerCase()) {
-        case 'p': // Pawn
-          if (isWhite) {
-            if (deltaY === -1 && deltaX === 0 && !destinationPiece) return true; // Move forward, no capture
-            if (deltaY === -1 && Math.abs(deltaX) === 1 && isEnemy) return true; // Capture diagonally
-            if (fromRow === 6 && deltaY === -2 && deltaX === 0 && !game[toRow][toCol] && !game[toRow + 1][toCol]) return true; // Move two squares from start
-          } else {
-            if (deltaY === 1 && deltaX === 0 && !destinationPiece) return true; // Move forward, no capture
-            if (deltaY === 1 && Math.abs(deltaX) === 1 && isEnemy) return true; // Capture diagonally
-            if (fromRow === 1 && deltaY === 2 && deltaX === 0 && !game[toRow][toCol] && !game[toRow - 1][toCol]) return true; // Move two squares from start
-          }
-          return false;
-        case 'r': // Rook
-          if (deltaX !== 0 && deltaY !== 0) return false; // Must move in straight lines
-          return isPathClear(fromRow, fromCol, toRow, toCol, game);
-        case 'n': // Knight
-          return (Math.abs(deltaX) === 2 && Math.abs(deltaY) === 1) || (Math.abs(deltaX) === 1 && Math.abs(deltaY) === 2);
-        case 'b': // Bishop
-          if (Math.abs(deltaX) !== Math.abs(deltaY)) return false; // Must move diagonally
-          return isPathClear(fromRow, fromCol, toRow, toCol, game);
-        case 'q': // Queen
-          if (deltaX !== 0 && deltaY !== 0 && Math.abs(deltaX) !== Math.abs(deltaY)) return false; // Must move like rook or bishop
-          return isPathClear(fromRow, fromCol, toRow, toCol, game);
-        case 'k': // King
-          return Math.abs(deltaX) <= 1 && Math.abs(deltaY) <= 1;
-        default:
-          return false;
+  const deltaX = toCol - fromCol;
+  const deltaY = toRow - fromRow;
+
+  switch (piece.toLowerCase()) {
+    case 'p': // Pawn
+      if (isWhite) {
+        if (deltaY === -1 && deltaX === 0 && !destinationPiece) return true; // Move forward, no capture
+        if (deltaY === -1 && Math.abs(deltaX) === 1 && destinationPiece && !isDestinationPieceWhite) return true; // Capture diagonally
+        if (fromRow === 6 && deltaY === -2 && deltaX === 0 && !game[toRow][toCol] && !game[toRow + 1][toCol]) return true; // Move two squares from start
+      } else {
+        if (deltaY === 1 && deltaX === 0 && !destinationPiece) return true; // Move forward, no capture
+        if (deltaY === 1 && Math.abs(deltaX) === 1 && destinationPiece && isDestinationPieceWhite) return true; // Capture diagonally
+        if (fromRow === 1 && deltaY === 2 && deltaX === 0 && !game[toRow][toCol] && !game[toRow - 1][toCol]) return true; // Move two squares from start
       }
-    }
+      return false;
+    case 'r': // Rook
+      if (deltaX !== 0 && deltaY !== 0) return false; // Must move in straight lines
+      return isPathClear(fromRow, fromCol, toRow, toCol, game);
+    case 'n': // Knight
+      return (Math.abs(deltaX) === 2 && Math.abs(deltaY) === 1) || (Math.abs(deltaX) === 1 && Math.abs(deltaY) === 2);
+    case 'b': // Bishop
+      if (Math.abs(deltaX) !== Math.abs(deltaY)) return false; // Must move diagonally
+      return isPathClear(fromRow, fromCol, toRow, toCol, game);
+    case 'q': // Queen
+      if (deltaX !== 0 && deltaY !== 0 && Math.abs(deltaX) !== Math.abs(deltaY)) return false; // Must move like rook or bishop
+      return isPathClear(fromRow, fromCol, toRow, toCol, game);
+    case 'k': // King
+      return Math.abs(deltaX) <= 1 && Math.abs(deltaY) <= 1;
+    default:
+      return false;
+  }
+}
 
     function isPathClear(fromRow, fromCol, toRow, toCol, game) {
       const stepX = Math.sign(toCol - fromCol);
