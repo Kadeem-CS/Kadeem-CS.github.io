@@ -41,6 +41,29 @@ for (let i = 0; i < numEnemies; i++) {
     createEnemy();
 }
 
+// Score and timer variables
+let score = 0;
+let timer = 60; // 1 minute timer
+const scoreLabel = new Konva.Text({
+    x: 10,
+    y: 10,
+    text: `Score: ${score}`,
+    fontSize: 20,
+    fontFamily: 'Arial',
+    fill: 'black'
+});
+layer.add(scoreLabel);
+
+const timerLabel = new Konva.Text({
+    x: stage.width() - 100,
+    y: 10,
+    text: `Time: ${timer}`,
+    fontSize: 20,
+    fontFamily: 'Arial',
+    fill: 'black'
+});
+layer.add(timerLabel);
+
 // Player movement
 const speed = 5;
 document.addEventListener('keydown', (e) => {
@@ -125,6 +148,11 @@ const updateBullets = () => {
             };
 
             if (checkCollision(enemyPos, bulletPos)) {
+                // Update score and display it
+                score++;
+                scoreLabel.text(`Score: ${score}`);
+                layer.batchDraw();
+
                 // Remove the enemy
                 enemy.destroy();
                 enemies.splice(j, 1);
@@ -154,6 +182,19 @@ const respawnEnemies = () => {
 
 // Set interval for respawning enemies every 5 seconds
 setInterval(respawnEnemies, 5000);
+
+// Timer countdown
+const timerInterval = setInterval(() => {
+    timer--;
+    timerLabel.text(`Time: ${timer}`);
+    layer.batchDraw();
+
+    if (timer <= 0) {
+        clearInterval(timerInterval);
+        alert('Game Over! Your score: ' + score);
+        window.location.reload(); // Reload the game
+    }
+}, 1000); // Update every second
 
 // Game loop
 const gameLoop = () => {
