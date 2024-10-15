@@ -23,7 +23,7 @@ layer.add(player);
 const enemies = [];
 const numEnemies = 10;
 
-for (let i = 0; i < numEnemies; i++) {
+const createEnemy = () => {
     const enemy = new Konva.Circle({
         x: Math.random() * stage.width(),
         y: Math.random() * stage.height(),
@@ -34,6 +34,11 @@ for (let i = 0; i < numEnemies; i++) {
     });
     enemies.push(enemy);
     layer.add(enemy);
+};
+
+// Initially spawn enemies
+for (let i = 0; i < numEnemies; i++) {
+    createEnemy();
 }
 
 // Player movement
@@ -41,15 +46,19 @@ const speed = 5;
 document.addEventListener('keydown', (e) => {
     switch (e.key) {
         case 'ArrowUp':
+        case 'w':
             player.y(player.y() - speed);
             break;
         case 'ArrowDown':
+        case 's':
             player.y(player.y() + speed);
             break;
         case 'ArrowLeft':
+        case 'a':
             player.x(player.x() - speed);
             break;
         case 'ArrowRight':
+        case 'd':
             player.x(player.x() + speed);
             break;
     }
@@ -73,7 +82,7 @@ document.addEventListener('click', (e) => {
         stroke: 'black',
         strokeWidth: 5
     });
-    
+
     // Store bullet's direction
     bullet.direction = angle; // Store direction for movement
     layer.add(bullet);
@@ -135,6 +144,16 @@ const checkCollision = (enemy, bullet) => {
     const distance = Math.sqrt(dx * dx + dy * dy);
     return distance < enemy.radius + bullet.radius;
 };
+
+// Respawn enemies after an interval
+const respawnEnemies = () => {
+    while (enemies.length < numEnemies) {
+        createEnemy();
+    }
+};
+
+// Set interval for respawning enemies every 5 seconds
+setInterval(respawnEnemies, 5000);
 
 // Game loop
 const gameLoop = () => {
