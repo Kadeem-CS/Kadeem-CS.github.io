@@ -64,9 +64,31 @@ const timerLabel = new Konva.Text({
 });
 layer.add(timerLabel);
 
+// Pause and resume variables
+let isPaused = false;
+const pauseLabel = new Konva.Text({
+    x: stage.width() / 2 - 50,
+    y: stage.height() / 2 - 20,
+    text: 'Paused',
+    fontSize: 30,
+    fontFamily: 'Arial',
+    fill: 'black',
+    visible: false // Initially hidden
+});
+layer.add(pauseLabel);
+
 // Player movement
 const speed = 5;
 document.addEventListener('keydown', (e) => {
+    if (e.key === 'p') { // Pause/resume game
+        isPaused = !isPaused;
+        pauseLabel.visible(isPaused);
+        layer.batchDraw();
+        return; // Skip other controls when paused
+    }
+
+    if (isPaused) return; // Prevent movement when paused
+
     switch (e.key) {
         case 'ArrowUp':
         case 'w':
@@ -93,6 +115,8 @@ const bullets = [];
 const bulletSpeed = 10;
 
 document.addEventListener('click', (e) => {
+    if (isPaused) return; // Prevent shooting when paused
+
     const pointerPosition = stage.getPointerPosition();
     const angle = Math.atan2(
         pointerPosition.y - player.y(),
@@ -185,21 +209,25 @@ setInterval(respawnEnemies, 5000);
 
 // Timer countdown
 const timerInterval = setInterval(() => {
-    timer--;
-    timerLabel.text(`Time: ${timer}`);
-    layer.batchDraw();
+    if (!isPaused) {
+        timer--;
+        timerLabel.text(`Time: ${timer}`);
+        layer.batchDraw();
 
-    if (timer <= 0) {
-        clearInterval(timerInterval);
-        alert('Game Over! Your score: ' + score);
-        window.location.reload(); // Reload the game
+        if (timer <= 0) {
+            clearInterval(timerInterval);
+            alert('Game Over! Your score: ' + score);
+            window.location.reload(); // Reload the game
+        }
     }
 }, 1000); // Update every second
 
 // Game loop
 const gameLoop = () => {
-    updateBullets();
-    layer.batchDraw();
+    if (!isPaused) {
+        updateBullets();
+        layer.batchDraw();
+    }
     requestAnimationFrame(gameLoop);
 };
 
