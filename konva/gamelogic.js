@@ -67,11 +67,15 @@ document.addEventListener('click', (e) => {
         pointerPosition.x - player.x()
     );
 
+    // Create bullet at player's position
     const bullet = new Konva.Line({
         points: [player.x(), player.y(), player.x() + Math.cos(angle) * 10, player.y() + Math.sin(angle) * 10],
         stroke: 'black',
         strokeWidth: 5
     });
+    
+    // Store bullet's direction
+    bullet.direction = angle; // Store direction for movement
     layer.add(bullet);
     bullets.push(bullet);
 });
@@ -81,22 +85,13 @@ const updateBullets = () => {
     for (let i = bullets.length - 1; i >= 0; i--) {
         const bullet = bullets[i];
         const points = bullet.points();
-        points[0] += Math.cos(Math.atan2(
-            points[3] - points[1],
-            points[2] - points[0]
-        )) * bulletSpeed;
-        points[1] += Math.sin(Math.atan2(
-            points[3] - points[1],
-            points[2] - points[0]
-        )) * bulletSpeed;
-        points[2] += Math.cos(Math.atan2(
-            points[3] - points[1],
-            points[2] - points[0]
-        )) * bulletSpeed;
-        points[3] += Math.sin(Math.atan2(
-            points[3] - points[1],
-            points[2] - points[0]
-        )) * bulletSpeed;
+
+        // Move bullet in the direction it was shot
+        points[0] += Math.cos(bullet.direction) * bulletSpeed; // x1
+        points[1] += Math.sin(bullet.direction) * bulletSpeed; // y1
+        points[2] += Math.cos(bullet.direction) * bulletSpeed; // x2
+        points[3] += Math.sin(bullet.direction) * bulletSpeed; // y2
+
         bullet.points(points);
         
         // Check for out-of-bounds
@@ -149,4 +144,3 @@ const gameLoop = () => {
 };
 
 gameLoop();
-
