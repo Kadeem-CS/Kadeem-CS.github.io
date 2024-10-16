@@ -19,6 +19,10 @@ const player = new Konva.Circle({
 });
 layer.add(player);
 
+const audio = new Audio("freejazz.wav");
+audio.loop = true;
+audio.play();
+
 // Create enemies
 const enemies = [];
 const numEnemies = 10;
