@@ -116,8 +116,8 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Sound effects
-const shootSound = new Audio('shootSound.mp3'); // Path to shooting sound
-const collisionSound = new Audio('collisionSound.mp3'); // Path to collision sound
+const shootSound = new Audio("https://od.lk/s/MzlfNDQ4ODM0NTVf/laser-gun-81720.mp3"); // Path to shooting sound
+const collisionSound = new Audio("https://od.lk/s/MzlfNDQ4ODM0OTNf/energetic-bgm-242515.mp3"); // Path to collision sound
 
 // Shooting bullets
 const bullets = [];
