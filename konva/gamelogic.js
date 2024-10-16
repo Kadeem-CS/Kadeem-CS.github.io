@@ -19,7 +19,7 @@ const player = new Konva.Circle({
 });
 layer.add(player);
 
-const audio = new Audio("freejazz.wav");
+const audio = new Audio("https://od.lk/s/MzlfNDQ4ODM0OTNf/energetic-bgm-242515.mp3");
 audio.playbackRate = 2;
 audio.loop = true;
 audio.play();
