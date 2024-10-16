@@ -20,6 +20,7 @@ const player = new Konva.Circle({
 layer.add(player);
 
 const audio = new Audio("freejazz.wav");
+audio.playbackRate = 2;
 audio.loop = true;
 audio.play();
 
