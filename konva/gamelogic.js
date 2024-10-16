@@ -110,12 +110,20 @@ document.addEventListener('keydown', (e) => {
     layer.batchDraw();
 });
 
+// Sound effects
+const shootSound = new Audio('shootSound.mp3'); // Path to shooting sound
+const collisionSound = new Audio('collisionSound.mp3'); // Path to collision sound
+
 // Shooting bullets
 const bullets = [];
 const bulletSpeed = 10;
 
 document.addEventListener('click', (e) => {
     if (isPaused) return; // Prevent shooting when paused
+
+    // Play shoot sound
+    shootSound.currentTime = 0; // Reset sound to the beginning
+    shootSound.play();
 
     const pointerPosition = stage.getPointerPosition();
     const angle = Math.atan2(
@@ -172,6 +180,10 @@ const updateBullets = () => {
             };
 
             if (checkCollision(enemyPos, bulletPos)) {
+                // Play collision sound
+                collisionSound.currentTime = 0; // Reset sound to the beginning
+                collisionSound.play();
+
                 // Update score and display it
                 score++;
                 scoreLabel.text(`Score: ${score}`);
