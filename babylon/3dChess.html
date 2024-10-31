@@ -5,15 +5,11 @@
   <title>3D Chess Game with Logic Integration</title>
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
   <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.min.js"></script>
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
 </head>
 <body>
   <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
 
-  <script type="text/babel" data-presets="react,stage-3">
-    // 2D Game Logic Setup
+  <script>
     const initialGameState = [
       ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
       ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
@@ -24,28 +20,16 @@
       ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
       ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
     ];
-    
-    function isValidMove(piece, fromRow, fromCol, toRow, toCol, game) {
-      // Insert the chess move validation logic here
-    }
-    
-    function isPathClear(fromRow, fromCol, toRow, toCol, game) {
-      // Insert the path clearance logic here
-    }
-    
-    function isInCheck(playerColor, game) {
-      // Insert the check detection logic here
-    }
 
-    // Babylon.js 3D Setup
     const canvas = document.getElementById("renderCanvas");
     const engine = new BABYLON.Engine(canvas, true);
-    
+
     const createScene = () => {
       const scene = new BABYLON.Scene(engine);
       const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 15, BABYLON.Vector3.Zero(), scene);
       camera.attachControl(canvas, true);
       const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+      light.intensity = 1.5;  // Increase intensity for better visibility
       
       // Create 3D Chessboard
       const boardSize = 8;
@@ -55,35 +39,48 @@
         tiles[row] = [];
         for (let col = 0; col < boardSize; col++) {
           const tile = BABYLON.MeshBuilder.CreateBox(`tile${row}_${col}`, { size: tileSize }, scene);
-          tile.position = new BABYLON.Vector3(row - boardSize / 2 + 0.5, 0, col - boardSize / 2 + 0.5);
+          tile.position = new BABYLON.Vector3(col - boardSize / 2 + 0.5, 0, row - boardSize / 2 + 0.5);
           const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
           tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(1, 1, 1) : new BABYLON.Color3(0, 0, 0);
           tile.material = tileMaterial;
           tiles[row][col] = tile;
         }
       }
-      
-      // Load 3D Pieces
-      const loadPiece = (name, position) => {
-        BABYLON.SceneLoader.ImportMesh("", "./", `${name}.glb`, scene, (meshes) => {
-          const piece = meshes[0];
-          piece.position = position;
-          piece.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
-          piece.actionManager = new BABYLON.ActionManager(scene);
-          piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-            // Set selected piece logic here
-          }));
+
+      // Load chess pieces based on initial game state
+      const pieceMap = {
+        'p': 'blackPawn.glb', 'r': 'blackRook.glb', 'n': 'blackKnight.glb', 'b': 'blackBishop.glb', 'q': 'blackQueen.glb', 'k': 'blackKing.glb',
+        'P': 'whitePawn.glb', 'R': 'whiteRook.glb', 'N': 'whiteKnight.glb', 'B': 'whiteBishop.glb', 'Q': 'whiteQueen.glb', 'K': 'whiteKing.glb'
+      };
+
+      initialGameState.forEach((row, rowIndex) => {
+        row.forEach((piece, colIndex) => {
+          if (piece) {
+            const pieceFile = pieceMap[piece];
+            const position = new BABYLON.Vector3(colIndex - boardSize / 2 + 0.5, 0.2, rowIndex - boardSize / 2 + 0.5);
+
+            BABYLON.SceneLoader.ImportMesh("", "./models/", pieceFile, scene, (meshes) => {
+              if (meshes.length > 0) {
+                const chessPiece = meshes[0];
+                chessPiece.position = position;
+                chessPiece.scaling = new BABYLON.Vector3(0.6, 0.6, 0.6); // Adjust scale if needed
+                chessPiece.actionManager = new BABYLON.ActionManager(scene);
+                chessPiece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
+                  console.log(`Piece selected: ${piece} at (${rowIndex}, ${colIndex})`);
+                }));
+              } else {
+                console.error(`No meshes loaded for ${pieceFile}`);
+              }
+            }, null, (scene, message, exception) => {
+              console.error(`Failed to load piece ${piece} (${pieceFile})`, message, exception);
+            });
+          }
         });
-      };
-      
-      // Function to move pieces based on the logic
-      scene.onPointerDown = (evt, pickResult) => {
-        // Check if piece selected and map to 2D logic for move validation
-      };
-      
+      });
+
       return scene;
     };
-    
+
     const scene = createScene();
     engine.runRenderLoop(() => scene.render());
 
@@ -91,4 +88,3 @@
   </script>
 </body>
 </html>
-
