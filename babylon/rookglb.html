@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rook 3D Model Export</title>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.min.js"></script>
+    <script src="https://cdn.babylonjs.com/serializers/babylon.glTF2Serializer.min.js"></script>
+</head>
+<body>
+    <canvas id="renderCanvas" style="width: 800px; height: 600px;"></canvas>
+    <button id="downloadButton">Download GLB</button>
+
+    <script>
+        // Get the canvas element
+        const canvas = document.getElementById('renderCanvas');
+
+        // Create Babylon.js engine
+        const engine = new BABYLON.Engine(canvas, true);
+
+        // Create the scene
+        const createScene = function () {
+            const scene = new BABYLON.Scene(engine);
+
+            // Add a camera
+            const camera = new BABYLON.ArcRotateCamera('Camera', Math.PI / 2, Math.PI / 2, 5, BABYLON.Vector3.Zero(), scene);
+            camera.attachControl(canvas, true);
+
+            // Add a light
+            const light = new BABYLON.HemisphericLight('hemiLight', new BABYLON.Vector3(0, 1, 0), scene);
+
+            // Create a rook shape by combining basic geometries
+            const base = BABYLON.MeshBuilder.CreateCylinder('base', { diameter: 2, height: 0.5 }, scene);
+            const body = BABYLON.MeshBuilder.CreateCylinder('body', { diameter: 1.5, height: 3 }, scene);
+            body.position.y = 1.75;
+            const top = BABYLON.MeshBuilder.CreateCylinder('top', { diameter: 1.7, height: 0.5 }, scene);
+            top.position.y = 3.25;
+
+            // Create a CSG operation to combine meshes
+            const rookCSG = BABYLON.CSG.FromMesh(base).union(BABYLON.CSG.FromMesh(body)).union(BABYLON.CSG.FromMesh(top)).toMesh('rook', null, scene);
+
+            // Dispose original geometry
+            base.dispose();
+            body.dispose();
+            top.dispose();
+
+            return scene;
+        };
+
+        const scene = createScene();
+
+        // Run the render loop
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+        // Resize the engine on window resize
+        window.addEventListener('resize', function () {
+            engine.resize();
+        });
+
+        // Export function to download GLB file
+        document.getElementById('downloadButton').addEventListener('click', function () {
+            BABYLON.GLTF2Export.GLBAsync(scene, "rook").then((glb) => {
+                glb.downloadFiles();
+            });
+        });
+
+    </script>
+</body>
+</html>

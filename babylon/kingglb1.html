@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chess King 3D Model Export</title>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.min.js"></script>
+    <script src="https://cdn.babylonjs.com/serializers/babylon.glTF2Serializer.min.js"></script>
+</head>
+<body>
+    <canvas id="renderCanvas" style="width: 800px; height: 600px;"></canvas>
+    <button id="downloadButton">Download King GLB</button>
+
+    <script>
+        // Get the canvas element and create the Babylon.js engine
+        const canvas = document.getElementById('renderCanvas');
+        const engine = new BABYLON.Engine(canvas, true);
+
+        // Create the scene
+        const createScene = function () {
+            const scene = new BABYLON.Scene(engine);
+
+            // Add a camera
+            const camera = new BABYLON.ArcRotateCamera("Camera", BABYLON.Tools.ToRadians(120), BABYLON.Tools.ToRadians(60), 10, new BABYLON.Vector3(0, 1, 0), scene);
+            camera.attachControl(canvas, true);
+
+            // Add a light
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+
+            // Create the base of the chess king
+            const base = BABYLON.MeshBuilder.CreateCylinder("base", { diameter: 1.2, height: 0.4 }, scene);
+            base.position.y = 0.2;
+
+            // Create the body of the king
+            const body = BABYLON.MeshBuilder.CreateCylinder("body", { diameterTop: 0.8, diameterBottom: 1, height: 1.5 }, scene);
+            body.position.y = 1.2;
+
+            // Create the top part of the king (head)
+            const head = BABYLON.MeshBuilder.CreateSphere("head", { diameter: 0.6 }, scene);
+            head.position.y = 2.2;
+
+            // Create the cross on top of the king's head
+            const verticalBar = BABYLON.MeshBuilder.CreateCylinder("verticalBar", { diameter: 0.1, height: 0.6 }, scene);
+            verticalBar.position.y = 2.8;
+
+            const horizontalBar = BABYLON.MeshBuilder.CreateBox("horizontalBar", { width: 0.6, height: 0.1, depth: 0.1 }, scene);
+            horizontalBar.position.y = 2.8;
+
+            // Combine all meshes into one single mesh to export
+            const king = BABYLON.Mesh.MergeMeshes([base, body, head, verticalBar, horizontalBar], true);
+
+            // Create a simple material (non-PBR) and apply it
+            const material = new BABYLON.StandardMaterial("kingMaterial", scene);
+            material.diffuseColor = new BABYLON.Color3(1, 1, 1); // White color
+            king.material = material;
+
+            return scene;
+        };
+
+        const scene = createScene();
+
+        // Render loop
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+        // Resize event handling
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+
+        // Export function to download the GLB file
+        document.getElementById('downloadButton').addEventListener('click', function () {
+            BABYLON.GLTF2Export.GLBAsync(scene, "chess_king").then((glb) => {
+                glb.downloadFiles();
+            });
+        });
+
+    </script>
+</body>
+</html>
