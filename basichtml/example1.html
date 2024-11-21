@@ -1,46 +1,167 @@
-<p id="demo"></p>
-
-<table> 
-
-  <tr>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    
-  </tr>
-</table>
-
-<table> 
-
-  <tr>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    <td> 1 </td>
-    
-  </tr>
-</table>
-
-<script>
-  document.getElementById("demo").innerHTML = "Hello Oneonta!";
-
-  tableref=document.getElementById("table1");
-  var row = tableref.insertRow(0);
-  for(col=0; col<16;  col++)
-    {
-      var cellref=row.insertCell(0)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flappy Bird</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: skyblue;
     }
-</script>
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .bird {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: yellow;
+      border-radius: 50%;
+      top: 50%;
+      left: 20%;
+    }
+    .pipe {
+      position: absolute;
+      width: 60px;
+      background: green;
+      bottom: 0;
+    }
+    .pipe.top {
+      transform: rotate(180deg);
+      bottom: auto;
+      top: 0;
+    }
+    #score {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div class="bird" id="bird"></div>
+    <div id="score">Score: 0</div>
+  </div>
+  <script>
+    // Game Elements
+    const game = document.getElementById('game');
+    const bird = document.getElementById('bird');
+    const scoreEl = document.getElementById('score');
+
+    // Game Variables
+    let birdY = game.offsetHeight / 2;
+    let birdVelocity = 0;
+    const gravity = 0.5;
+    const jump = -10;
+    const pipeGap = 150;
+    const pipeWidth = 60;
+    const pipeInterval = 2000;
+    const pipeSpeed = 4;
+    let score = 0;
+    let pipes = [];
+    let isGameOver = false;
+
+    // Create Pipe
+    function createPipe() {
+      const pipeTopHeight = Math.random() * (game.offsetHeight - pipeGap - 50) + 50;
+      const pipeBottomHeight = game.offsetHeight - pipeGap - pipeTopHeight;
+
+      const pipeTop = document.createElement('div');
+      pipeTop.classList.add('pipe', 'top');
+      pipeTop.style.height = `${pipeTopHeight}px`;
+      pipeTop.style.right = '0';
+
+      const pipeBottom = document.createElement('div');
+      pipeBottom.classList.add('pipe');
+      pipeBottom.style.height = `${pipeBottomHeight}px`;
+      pipeBottom.style.right = '0';
+
+      game.appendChild(pipeTop);
+      game.appendChild(pipeBottom);
+
+      pipes.push({ top: pipeTop, bottom: pipeBottom, x: game.offsetWidth });
+    }
+
+    // Move Pipes
+    function movePipes() {
+      pipes.forEach((pipe, index) => {
+        pipe.x -= pipeSpeed;
+        pipe.top.style.right = `${game.offsetWidth - pipe.x}px`;
+        pipe.bottom.style.right = `${game.offsetWidth - pipe.x}px`;
+
+        if (pipe.x + pipeWidth < 0) {
+          pipe.top.remove();
+          pipe.bottom.remove();
+          pipes.splice(index, 1);
+          score++;
+          scoreEl.textContent = `Score: ${score}`;
+        }
+
+        const birdRect = bird.getBoundingClientRect();
+        const pipeTopRect = pipe.top.getBoundingClientRect();
+        const pipeBottomRect = pipe.bottom.getBoundingClientRect();
+
+        if (
+          birdRect.right > pipeTopRect.left &&
+          birdRect.left < pipeTopRect.right &&
+          (birdRect.top < pipeTopRect.bottom || birdRect.bottom > pipeBottomRect.top)
+        ) {
+          endGame();
+        }
+      });
+    }
+
+    // Bird Physics
+    function moveBird() {
+      birdVelocity += gravity;
+      birdY += birdVelocity;
+      bird.style.top = `${birdY}px`;
+
+      if (birdY + bird.offsetHeight > game.offsetHeight || birdY < 0) {
+        endGame();
+      }
+    }
+
+    // End Game
+    function endGame() {
+      isGameOver = true;
+      alert(`Game Over! Your score is ${score}`);
+      window.location.reload();
+    }
+
+    // Game Loop
+    function gameLoop() {
+      if (!isGameOver) {
+        moveBird();
+        movePipes();
+        requestAnimationFrame(gameLoop);
+      }
+    }
+
+    // Start Pipes Interval
+    setInterval(() => {
+      if (!isGameOver) createPipe();
+    }, pipeInterval);
+
+    // Bird Jump
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        birdVelocity = jump;
+      }
+    });
+
+    // Start Game
+    gameLoop();
+  </script>
+</body>
+</html>
