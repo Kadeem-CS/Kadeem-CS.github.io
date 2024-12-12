@@ -11,7 +11,7 @@
 <body>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
     <button id="downloadButton" style="position: absolute; top: 20px; left: 20px; z-index: 10;">Download Stickman GLB</button>
-    
+
     <script>
         var canvas = document.getElementById("renderCanvas");
         var engine = new BABYLON.Engine(canvas, true);
@@ -19,115 +19,75 @@
         const createScene = function () {
             const scene = new BABYLON.Scene(engine);
 
-            const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 1.5, Math.PI / 2.2, 15, new BABYLON.Vector3(0, 0, 0));
+            // Camera and light setup
+            const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 20, new BABYLON.Vector3(0, 0, 0), scene);
             camera.attachControl(canvas, true);
 
-            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+            light.intensity = 0.8;
 
-            // 1. Add a ground plane
+            // Adding a ground plane
             const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 50, height: 50 }, scene);
             const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-            groundMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.8, 0.5);
+            groundMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.6, 0.3);
             ground.material = groundMaterial;
 
-            BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb");
+            // Load the village model
+            BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb", scene);
 
-            const walk = function (turn, dist) {
-                this.turn = turn;
-                this.dist = dist;
-            };
-
-            const track = [
-                new walk(86, 7),
-                new walk(-85, 14.8),
-                new walk(-93, 16.5),
-                new walk(48, 25.5),
-                new walk(-112, 30.5),
-                new walk(-72, 33.2),
-                new walk(42, 37.5),
-                new walk(-98, 45.2),
-                new walk(0, 47),
-            ];
-
-            // Dude
-            BABYLON.SceneLoader.ImportMeshAsync("him", "./", "Dude3.babylon", scene).then((result) => {
-                var dude = result.meshes[0];
-                dude.scaling = new BABYLON.Vector3(0.012, 0.012, 0.012);
-
-                dude.position = new BABYLON.Vector3(-6, 0, 0);
-                dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(-95), BABYLON.Space.LOCAL);
-                const startRotation = dude.rotationQuaternion.clone();
-
-                scene.beginAnimation(result.skeletons[0], 0, 100, true, 1.0);
-
-                let distance = 0;
-                let step = 0.015;
-                let p = 0;
-
-                scene.onBeforeRenderObservable.add(() => {
-                    dude.movePOV(0, 0, step);
-                    distance += step;
-
-                    if (distance > track[p].dist) {
-                        dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(track[p].turn), BABYLON.Space.LOCAL);
-                        p += 1;
-                        p %= track.length;
-                        if (p === 0) {
-                            distance = 0;
-                            dude.position = new BABYLON.Vector3(-6, 0, 0);
-                            dude.rotationQuaternion = startRotation.clone();
-                        }
-                    }
-                });
+            // Load and adjust the troll model
+            BABYLON.SceneLoader.Append("./", "troll.glb", scene, function (scene) {
+                const troll = scene.meshes[0];
+                troll.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+                troll.position = new BABYLON.Vector3(2, 0, 0);
             });
 
-            // 2. Adjust troll scaling for better visibility
-            BABYLON.SceneLoader.Append("./", "troll.glb", scene, function (newMeshes) {
-                newMeshes[0].scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
-                newMeshes[0].position = new BABYLON.Vector3(1, 2, 0);
+            // Load and position the Stanford Bunny
+            BABYLON.SceneLoader.Append("./", "StanfordBunny.obj", scene, function (scene) {
+                const bunny = scene.meshes[0];
+                bunny.position = new BABYLON.Vector3(0, 0, 8);
+                bunny.scaling = new BABYLON.Vector3(2, 2, 2);
             });
 
-            // 3. Create a basic skybox
-            const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000 }, scene);
+            // Create a glowing sphere
+            const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 0.5, segments: 32 }, scene);
+            sphere.position = new BABYLON.Vector3(0, 1, 6);
+            const sphereMaterial = new BABYLON.StandardMaterial("sphereMaterial", scene);
+            sphereMaterial.emissiveColor = new BABYLON.Color3(1, 0.5, 0);
+            sphere.material = sphereMaterial;
+
+            // Add a skybox
+            const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
             const skyboxMaterial = new BABYLON.StandardMaterial("skyBoxMaterial", scene);
             skyboxMaterial.backFaceCulling = false;
-            skyboxMaterial.diffuseColor = new BABYLON.Color3(0.6, 0.8, 1);
+            skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+            skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+            skyboxMaterial.emissiveTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/skybox.jpg", scene);
             skybox.material = skyboxMaterial;
-
-            // 4. Adjust sphere color and position for a glowing effect
-            var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
-                diameter: 0.5,
-                segments: 32,
-            }, scene);
-            sphere.position = new BABYLON.Vector3(0, 1, 6);
-            var material = new BABYLON.StandardMaterial("material", scene);
-            material.emissiveColor = new BABYLON.Color3(1, 0.5, 0);
-            sphere.material = material;
-
-            // 5. Add FPS counter
-            engine.enableDebugLayer();
 
             return scene;
         };
 
-        var scene = createScene();
+        const scene = createScene();
 
-        engine.runRenderLoop(function () {
+        // Render loop
+        engine.runRenderLoop(() => {
             scene.render();
         });
 
-        window.addEventListener("resize", function () {
+        // Resize handler
+        window.addEventListener("resize", () => {
             engine.resize();
         });
 
-        // Function to export as GLB
+        // Export to GLB function
         function exportToGLB() {
             BABYLON.GLTF2Export.GLBAsync(scene, "stickman.glb").then((glb) => {
                 glb.downloadFiles();
             });
         }
 
-        // Attach export function to the download button
+        // Attach export function to button
         document.getElementById("downloadButton").addEventListener("click", exportToGLB);
     </script>
 </body>
