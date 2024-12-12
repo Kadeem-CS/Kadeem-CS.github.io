@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Babylon.js Village</title>
+    <title>Babylon.js Village </title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.js"></script>
     <script src="https://cdn.babylonjs.com/serializers/babylon.glTFSerializer.js"></script>
@@ -16,92 +17,152 @@
         var canvas = document.getElementById("renderCanvas");
         var engine = new BABYLON.Engine(canvas, true);
 
+
         const createScene = function () {
+            
             const scene = new BABYLON.Scene(engine);
 
-            // Camera
             const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 1.5, Math.PI / 2.2, 15, new BABYLON.Vector3(0, 0, 0));
             camera.attachControl(canvas, true);
-
-            // Light
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
 
-            // Add ground
-            const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 50, height: 50 }, scene);
-            const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-            groundMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-            ground.material = groundMaterial;
+            
 
-            // Add skybox
-            const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, scene);
-            const skyboxMaterial = new BABYLON.StandardMaterial("skyBoxMaterial", scene);
-            skyboxMaterial.backFaceCulling = false;
-            skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("https://assets.babylonjs.com/environments/environmentSpecular", scene);
-            skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-            skyboxMaterial.disableLighting = true;
-            skybox.material = skyboxMaterial;
-
-            // Load the village model
             BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb");
+     
+            
+            const walk = function (turn, dist) {
+                this.turn = turn;
+                this.dist = dist;
+            }
+            
+            const track = [];
+            track.push(new walk(86, 7));
+            track.push(new walk(-85, 14.8));
+            track.push(new walk(-93, 16.5));
+            track.push(new walk(48, 25.5));
+            track.push(new walk(-112, 30.5));
+            track.push(new walk(-72, 33.2));
+            track.push(new walk(42, 37.5));
+            track.push(new walk(-98, 45.2));
+            track.push(new walk(0, 47))
 
-            // Load the dude model
+            // Dude
             BABYLON.SceneLoader.ImportMeshAsync("him", "./", "Dude3.babylon", scene).then((result) => {
                 var dude = result.meshes[0];
                 dude.scaling = new BABYLON.Vector3(0.012, 0.012, 0.012);
+                    
                 dude.position = new BABYLON.Vector3(-6, 0, 0);
                 dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(-95), BABYLON.Space.LOCAL);
-                const startRotation = dude.rotationQuaternion.clone();
+                const startRotation = dude.rotationQuaternion.clone();    
+                    
                 scene.beginAnimation(result.skeletons[0], 0, 100, true, 1.0);
 
                 let distance = 0;
                 let step = 0.015;
                 let p = 0;
 
-                const track = [
-                    { turn: 86, dist: 7 },
-                    { turn: -85, dist: 14.8 },
-                    { turn: -93, dist: 16.5 },
-                    { turn: 48, dist: 25.5 },
-                    { turn: -112, dist: 30.5 },
-                    { turn: -72, dist: 33.2 },
-                    { turn: 42, dist: 37.5 },
-                    { turn: -98, dist: 45.2 },
-                    { turn: 0, dist: 47 }
-                ];
-
                 scene.onBeforeRenderObservable.add(() => {
                     dude.movePOV(0, 0, step);
                     distance += step;
-
+                      
                     if (distance > track[p].dist) {
+                        
                         dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(track[p].turn), BABYLON.Space.LOCAL);
-                        p += 1;
-                        p %= track.length;
+                        p +=1;
+                        p %= track.length; 
                         if (p === 0) {
                             distance = 0;
                             dude.position = new BABYLON.Vector3(-6, 0, 0);
                             dude.rotationQuaternion = startRotation.clone();
                         }
                     }
-                });
+                    
+                })
             });
 
-            // Load the bunny model
-            BABYLON.SceneLoader.ImportMesh("", "./", "StanfordBunny.obj", scene, (meshes) => {
-                meshes.forEach((mesh) => {
-                    mesh.position = new BABYLON.Vector3(0, 0, 0);
-                    mesh.scaling = new BABYLON.Vector3(2, 2, 2);
-                });
-            }, null, (scene, message, exception) => {
-                console.error("Error loading OBJ file:", message, exception);
-            });
+          BABYLON.SceneLoader.Append("./", "troll.glb", scene, function (newMeshes) {
+                 newMeshes[0].scaling = new BABYLON.Vector3(0.00001, 0.00001, 0.00001);
+    newMeshes[0].position = new BABYLON.Vector3(1, 2, 0);
+               
+});
 
-            // Add FPS counter
-            engine.enableOfflineSupport = false;
-            scene.debugLayer.show({ embedMode: true });
+            BABYLON.SceneLoader.Append("./", "StanfordBunny.obj", scene, function (newMeshes) {
+    newMeshes[0].position = new BABYLON.Vector3(0, 0, 8);
+                newMeshes[0].scaling = new BABYLON.Vector3(2, 2, 2);
+});
+            
+            // Create the sphere
+var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
+    diameter: 0.5, // diameter of the sphere
+    segments: 32, // number of segments
+}, scene);
 
+// Position the sphere
+sphere.position = new BABYLON.Vector3(0, 0, 6);
+var material = new BABYLON.StandardMaterial("material", scene); 
+material.diffuseColor = new BABYLON.Color3(1, 0.5, 0.5); // red color // Create red material
+sphere.material = material;// Assign material to sphere
+
+            // Define sphere properties
+var sphereProperties = {
+    diameter: 2,
+    segments: 32,
+};
+
+// Define materials
+var materials = [
+    new BABYLON.StandardMaterial("material1", scene),
+    new BABYLON.StandardMaterial("material2", scene),
+    new BABYLON.StandardMaterial("material3", scene)
+];
+
+materials[0].diffuseColor = new BABYLON.Color3(1, 0, 0); // Red
+materials[1].diffuseColor = new BABYLON.Color3(0, 1, 0); // Green
+materials[2].diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue
+
+// Define positions
+var positions = [
+    new BABYLON.Vector3(0, 0, 0),
+    new BABYLON.Vector3(0, 2, 0),
+    new BABYLON.Vector3(2, 0, 0)
+];
+
+// Create spheres
+for (var i = 0; i < 3; i++) {
+    var sphere = BABYLON.MeshBuilder.CreateSphere("sphere" + i, sphereProperties, scene);
+    sphere.position = positions[i];
+    sphere.material = materials[i];
+}
+            
+            /*
+            // Load the bunny OBJ model
+            BABYLON.SceneLoader.ImportMesh(
+                "",                        // No name filter; load all meshes
+                "./",     // Path to the folder where .obj and .mtl are located
+                "StanfordBunny.obj",           // Name of the OBJ file
+                scene,                     // The scene to import into
+                function (meshes) {        // Callback once loaded
+                    alert("How many meshes?", mesh.length)
+                    // Position the loaded model (optional)
+                    meshes.forEach(mesh => {
+                        mesh.position = new BABYLON.Vector3(0, 0, 0);
+                        meshes.scaling = new BABYLON.Vector3(2, 2, 2); // Scale by factor of 2
+                    });
+                },
+                null,                      // Progress function (optional)
+                function (scene, message, exception) { // Error callback
+                    console.error("Error loading OBJ file:", message, exception);
+                }
+            );
+
+            */
+                   alert("have fun & be creative");
+            
             return scene;
         };
+
+  
 
         var scene = createScene();
 
