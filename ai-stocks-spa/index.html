@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI in Stock Trading</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CDN (NO NPM) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Navbar -->
+  <nav class="bg-black text-white p-4 flex gap-4 justify-center">
+    <button onclick="showSection('home')" class="hover:text-blue-400">Home</button>
+    <button onclick="showSection('ai')" class="hover:text-blue-400">AI in Stocks</button>
+    <button onclick="showSection('usage')" class="hover:text-blue-400">Usage</button>
+    <button onclick="showSection('ethics')" class="hover:text-blue-400">Ethics</button>
+  </nav>
+
+  <!-- Content -->
+  <main class="max-w-4xl mx-auto p-6">
+
+    <!-- Home -->
+    <section id="home" class="section">
+      <h1 class="text-3xl font-bold mb-4">AI & the Stock Market</h1>
+      <p>
+        Artificial Intelligence is transforming how stocks are analyzed,
+        traded, and managed by financial institutions and individual investors.
+      </p>
+    </section>
+
+    <!-- AI -->
+    <section id="ai" class="section hidden">
+      <h2 class="text-2xl font-semibold mb-4">What is AI in Stock Trading?</h2>
+      <p>
+        AI in stock trading refers to the use of machine learning algorithms
+        and data analysis techniques to predict market trends and automate
+        trading decisions.
+      </p>
+    </section>
+
+    <!-- Usage -->
+    <section id="usage" class="section hidden">
+      <h2 class="text-2xl font-semibold mb-4">How AI Is Used</h2>
+      <ul class="list-disc ml-6 space-y-2">
+        <li>Algorithmic trading</li>
+        <li>Market trend prediction</li>
+        <li>Risk management</li>
+        <li>Portfolio optimization</li>
+      </ul>
+    </section>
+
+    <!-- Ethics -->
+    <section id="ethics" class="section hidden">
+      <h2 class="text-2xl font-semibold mb-4">Ethical Concerns</h2>
+      <p>
+        AI trading raises concerns about fairness, transparency,
+        market manipulation, and unequal access to advanced technology.
+      </p>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
