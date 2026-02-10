@@ -5,62 +5,113 @@
   <title>AI in Stock Trading</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Tailwind CDN (NO NPM) -->
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-800">
+
+<body class="bg-gradient-to-br from-slate-900 via-gray-900 to-black 
+             text-gray-100 min-h-screen font-sans">
+
+  <!-- Header -->
+  <header class="text-center py-10">
+    <h1 class="text-4xl font-extrabold tracking-wide text-blue-400 drop-shadow-lg">
+      AI & Stock Market Intelligence
+    </h1>
+    <p class="mt-3 text-gray-400 italic">
+      How artificial intelligence is reshaping investing
+    </p>
+  </header>
 
   <!-- Navbar -->
-  <nav class="bg-black text-white p-4 flex gap-4 justify-center">
-    <button onclick="showSection('home')" class="hover:text-blue-400">Home</button>
-    <button onclick="showSection('ai')" class="hover:text-blue-400">AI in Stocks</button>
-    <button onclick="showSection('usage')" class="hover:text-blue-400">Usage</button>
-    <button onclick="showSection('ethics')" class="hover:text-blue-400">Ethics</button>
+  <nav class="sticky top-0 z-50 bg-black/60 backdrop-blur-md 
+              flex justify-center gap-6 py-4 border-b border-gray-700">
+    <button onclick="showSection('home')" 
+      class="px-4 py-2 rounded-lg hover:bg-blue-500/20 transition duration-300">
+      Home
+    </button>
+    <button onclick="showSection('ai')" 
+      class="px-4 py-2 rounded-lg hover:bg-blue-500/20 transition duration-300">
+      AI Basics
+    </button>
+    <button onclick="showSection('usage')" 
+      class="px-4 py-2 rounded-lg hover:bg-blue-500/20 transition duration-300">
+      Applications
+    </button>
+    <button onclick="showSection('ethics')" 
+      class="px-4 py-2 rounded-lg hover:bg-blue-500/20 transition duration-300">
+      Ethics
+    </button>
   </nav>
 
-  <!-- Content -->
-  <main class="max-w-4xl mx-auto p-6">
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto p-8 grid gap-8">
 
     <!-- Home -->
-    <section id="home" class="section">
-      <h1 class="text-3xl font-bold mb-4">AI & the Stock Market</h1>
-      <p>
-        Artificial Intelligence is transforming how stocks are analyzed,
-        traded, and managed by financial institutions and individual investors.
+    <section id="home" class="section bg-gray-800/70 rounded-2xl p-6 shadow-xl">
+      <h2 class="text-2xl font-semibold mb-4 text-blue-300">
+        Overview
+      </h2>
+      <p class="leading-relaxed text-gray-300">
+        Artificial Intelligence has become a critical tool in financial markets.
+        It allows investors to analyze massive data sets, predict market behavior,
+        and automate trading decisions at speeds impossible for humans.
       </p>
     </section>
 
-    <!-- AI -->
-    <section id="ai" class="section hidden">
-      <h2 class="text-2xl font-semibold mb-4">What is AI in Stock Trading?</h2>
-      <p>
-        AI in stock trading refers to the use of machine learning algorithms
-        and data analysis techniques to predict market trends and automate
-        trading decisions.
+    <!-- AI Basics -->
+    <section id="ai" class="section hidden bg-gray-800/70 rounded-2xl p-6 shadow-xl">
+      <h2 class="text-2xl font-semibold mb-4 text-green-300">
+        What Is AI in Stock Trading?
+      </h2>
+      <p class="text-gray-300">
+        AI systems use <span class="font-bold text-white">machine learning</span>,
+        neural networks, and natural language processing to interpret market data
+        such as price movement, news sentiment, and economic indicators.
       </p>
     </section>
 
-    <!-- Usage -->
-    <section id="usage" class="section hidden">
-      <h2 class="text-2xl font-semibold mb-4">How AI Is Used</h2>
-      <ul class="list-disc ml-6 space-y-2">
-        <li>Algorithmic trading</li>
-        <li>Market trend prediction</li>
-        <li>Risk management</li>
-        <li>Portfolio optimization</li>
-      </ul>
+    <!-- Applications -->
+    <section id="usage" class="section hidden bg-gray-800/70 rounded-2xl p-6 shadow-xl">
+      <h2 class="text-2xl font-semibold mb-4 text-purple-300">
+        Real-World Applications
+      </h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-black/40 p-4 rounded-xl hover:scale-105 transition">
+          <h3 class="font-bold mb-2">Algorithmic Trading</h3>
+          <p class="text-sm text-gray-400">
+            AI executes trades automatically based on predefined strategies.
+          </p>
+        </div>
+
+        <div class="bg-black/40 p-4 rounded-xl hover:scale-105 transition">
+          <h3 class="font-bold mb-2">Risk Analysis</h3>
+          <p class="text-sm text-gray-400">
+            Models assess volatility and predict potential losses.
+          </p>
+        </div>
+      </div>
     </section>
 
     <!-- Ethics -->
-    <section id="ethics" class="section hidden">
-      <h2 class="text-2xl font-semibold mb-4">Ethical Concerns</h2>
-      <p>
-        AI trading raises concerns about fairness, transparency,
-        market manipulation, and unequal access to advanced technology.
-      </p>
+    <section id="ethics" class="section hidden bg-gray-800/70 rounded-2xl p-6 shadow-xl">
+      <h2 class="text-2xl font-semibold mb-4 text-red-300">
+        Ethical & Social Concerns
+      </h2>
+      <ul class="list-disc ml-6 space-y-2 text-gray-300">
+        <li>Market manipulation risks</li>
+        <li>Lack of transparency in algorithms</li>
+        <li>Unequal access to AI technology</li>
+        <li>Potential job displacement</li>
+      </ul>
     </section>
 
   </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-6 text-xs text-gray-500 border-t border-gray-700">
+    © 2026 | Educational SPA on AI & Stocks
+  </footer>
 
   <script src="script.js"></script>
 </body>
