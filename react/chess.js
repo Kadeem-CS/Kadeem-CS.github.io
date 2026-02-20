@@ -36,6 +36,7 @@ let boardState = createInitialBoard();
 let turn = "w";
 let selected = null;
 let legalMoves = [];
+let gameOver = false;
 
 const boardEl = document.getElementById("board");
 const statusEl = document.getElementById("status");
@@ -109,7 +110,9 @@ function generateMoves(board, from) {
 
 function render() {
   boardEl.innerHTML = "";
-  statusEl.textContent = `Turn: ${turn === "w" ? "White" : "Black"}`;
+  statusEl.textContent = gameOver
+    ? statusEl.textContent
+    : `Turn: ${turn === "w" ? "White" : "Black"}`;
 
   for (let r = 0; r < 8; r++) {
     const rowEl = document.createElement("div");
@@ -144,6 +147,8 @@ function render() {
 }
 
 function onSquareClick(e) {
+  if (gameOver) return;
+
   const r = parseInt(e.currentTarget.dataset.row, 10);
   const c = parseInt(e.currentTarget.dataset.col, 10);
   const piece = boardState[r][c];
@@ -153,11 +158,23 @@ function onSquareClick(e) {
     const isLegal = legalMoves.some(([mr, mc]) => mr === r && mc === c);
 
     if (isLegal) {
+      // Check if capturing a king
+      if (boardState[r][c] && boardState[r][c].type === "K") {
+        const winner = turn === "w" ? "White" : "Black";
+        statusEl.textContent = winner + " wins!";
+        gameOver = true;
+      }
+
       boardState[r][c] = boardState[sr][sc];
       boardState[sr][sc] = null;
+
       selected = null;
       legalMoves = [];
-      turn = turn === "w" ? "b" : "w";
+
+      if (!gameOver) {
+        turn = turn === "w" ? "b" : "w";
+      }
+
       render();
       return;
     }
@@ -180,6 +197,7 @@ newGameBtn.addEventListener("click", () => {
   turn = "w";
   selected = null;
   legalMoves = [];
+  gameOver = false;
   render();
 });
 
