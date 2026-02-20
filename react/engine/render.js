@@ -1,3 +1,8 @@
+// These variables come from main.js
+// render.js must NOT redeclare them
+// It simply uses them
+
+
 function render() {
   boardEl.innerHTML = "";
   statusEl.textContent = gameOver
@@ -26,6 +31,15 @@ function render() {
       squareEl.dataset.row = r;
       squareEl.dataset.col = c;
 
+if (selected && selected[0] === r && selected[1] === c) {
+  squareEl.classList.add("selected");
+}
+
+if (legalMoves.some(([lr, lc]) => lr === r && lc === c)) {
+  squareEl.classList.add("legal");
+}
+
+      
       const piece = boardState[r][c];
       if (piece) {
         squareEl.textContent = PIECES[piece.color + piece.type];
