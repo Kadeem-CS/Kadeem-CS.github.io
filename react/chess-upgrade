@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>GitHub React Chess</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Plain JS Chess</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
@@ -41,6 +38,7 @@
       cursor: pointer;
       position: relative;
       transition: background 0.15s ease;
+      user-select: none;
     }
     .light {
       background: #f0d9b5;
@@ -76,11 +74,14 @@
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div class="app">
+    <h1>Plain JavaScript Chess</h1>
+    <div class="status" id="status"></div>
+    <div class="board" id="board"></div>
+    <button id="newGameBtn">New Game</button>
+  </div>
 
-  <script type="text/babel">
-    const { useState } = React;
-
+  <script>
     const PIECES = {
       wP: "♙", wR: "♖", wN: "♘", wB: "♗", wQ: "♕", wK: "♔",
       bP: "♟", bR: "♜", bN: "♞", bB: "♝", bQ: "♛", bK: "♚",
@@ -115,12 +116,17 @@
       return board;
     }
 
+    let boardState = createInitialBoard();
+    let turn = "w";
+    let selected = null;
+    let legalMoves = [];
+
+    const boardEl = document.getElementById("board");
+    const statusEl = document.getElementById("status");
+    const newGameBtn = document.getElementById("newGameBtn");
+
     function inBounds(r, c) {
       return r >= 0 && r < 8 && c >= 0 && c < 8;
-    }
-
-    function cloneBoard(board) {
-      return board.map(row => row.map(cell => cell ? { ...cell } : null));
     }
 
     function generateMoves(board, from) {
@@ -185,87 +191,79 @@
       return moves;
     }
 
-    function App() {
-      const [board, setBoard] = useState(createInitialBoard);
-      const [turn, setTurn] = useState("w");
-      const [selected, setSelected] = useState(null);
-      const [legalMoves, setLegalMoves] = useState([]);
+    function render() {
+      boardEl.innerHTML = "";
+      statusEl.textContent = `Turn: ${turn === "w" ? "White" : "Black"}`;
 
-      function handleSquareClick(r, c) {
-        const piece = board[r][c];
+      for (let r = 0; r < 8; r++) {
+        const rowEl = document.createElement("div");
+        rowEl.className = "row";
+        for (let c = 0; c < 8; c++) {
+          const squareEl = document.createElement("div");
+          const isLight = (r + c) % 2 === 0;
+          squareEl.className = "square " + (isLight ? "light" : "dark");
+          squareEl.dataset.row = r;
+          squareEl.dataset.col = c;
 
-        if (selected) {
-          const [sr, sc] = selected;
-          const isLegal = legalMoves.some(([mr, mc]) => mr === r && mc === c);
-          if (isLegal) {
-            const newBoard = cloneBoard(board);
-            newBoard[r][c] = newBoard[sr][sc];
-            newBoard[sr][sc] = null;
-            setBoard(newBoard);
-            setSelected(null);
-            setLegalMoves([]);
-            setTurn(t => (t === "w" ? "b" : "w"));
-            return;
+          if (selected && selected[0] === r && selected[1] === c) {
+            squareEl.classList.add("selected");
           }
-          setSelected(null);
-          setLegalMoves([]);
-          return;
+
+          if (legalMoves.some(([mr, mc]) => mr === r && mc === c)) {
+            squareEl.classList.add("legal");
+          }
+
+          const piece = boardState[r][c];
+          if (piece) {
+            squareEl.textContent = PIECES[piece.color + piece.type];
+          }
+
+          squareEl.addEventListener("click", onSquareClick);
+          rowEl.appendChild(squareEl);
         }
-
-        if (piece && piece.color === turn) {
-          setSelected([r, c]);
-          setLegalMoves(generateMoves(board, [r, c]));
-        }
+        boardEl.appendChild(rowEl);
       }
-
-      function resetGame() {
-        setBoard(createInitialBoard());
-        setTurn("w");
-        setSelected(null);
-        setLegalMoves([]);
-      }
-
-      return (
-        <div className="app">
-          <h1>GitHub React Chess</h1>
-          <div className="status">
-            Turn: {turn === "w" ? "White" : "Black"}
-          </div>
-          <div className="board">
-            {board.map((row, r) => (
-              <div className="row" key={r}>
-                {row.map((cell, c) => {
-                  const isLight = (r + c) % 2 === 0;
-                  const isSelected =
-                    selected && selected[0] === r && selected[1] === c;
-                  const isLegal = legalMoves.some(
-                    ([mr, mc]) => mr === r && mc === c
-                  );
-                  return (
-                    <div
-                      key={c}
-                      className={
-                        "square " +
-                        (isLight ? "light" : "dark") +
-                        (isSelected ? " selected" : "") +
-                        (isLegal ? " legal" : "")
-                      }
-                      onClick={() => handleSquareClick(r, c)}
-                    >
-                      {cell ? PIECES[cell.color + cell.type] : ""}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-          <button onClick={resetGame}>New Game</button>
-        </div>
-      );
     }
 
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<App />);
+    function onSquareClick(e) {
+      const r = parseInt(e.currentTarget.dataset.row, 10);
+      const c = parseInt(e.currentTarget.dataset.col, 10);
+      const piece = boardState[r][c];
+
+      if (selected) {
+        const [sr, sc] = selected;
+        const isLegal = legalMoves.some(([mr, mc]) => mr === r && mc === c);
+        if (isLegal) {
+          boardState[r][c] = boardState[sr][sc];
+          boardState[sr][sc] = null;
+          selected = null;
+          legalMoves = [];
+          turn = turn === "w" ? "b" : "w";
+          render();
+          return;
+        }
+        selected = null;
+        legalMoves = [];
+        render();
+        return;
+      }
+
+      if (piece && piece.color === turn) {
+        selected = [r, c];
+        legalMoves = generateMoves(boardState, [r, c]);
+        render();
+      }
+    }
+
+    newGameBtn.addEventListener("click", () => {
+      boardState = createInitialBoard();
+      turn = "w";
+      selected = null;
+      legalMoves = [];
+      render();
+    });
+
+    render();
   </script>
 </body>
 </html>
