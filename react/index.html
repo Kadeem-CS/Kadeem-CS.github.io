@@ -2,19 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Plain JavaScript Chess</title>
+  <title>Full JavaScript Chess Engine</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <h1>Plain JavaScript Chess</h1>
-  <div id="status"></div>
-  <div id="board"></div>
-  <button id="newGameBtn">New Game</button>
+  <h1>JavaScript Chess Engine</h1>
 
-  <script src="chess.js"></script>
+  <div id="status"></div>
+
+  <div id="board"></div>
+
+  <div id="controls">
+    <button id="undoBtn">Undo</button>
+    <button id="redoBtn">Redo</button>
+    <button id="aiBtn">Toggle AI</button>
+    <button id="newGameBtn">New Game</button>
+  </div>
+
+  <div id="history"></div>
+
+  <script src="js/board.js"></script>
+  <script src="js/moves.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/history.js"></script>
+  <script src="js/dragdrop.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/main.js"></script>
+
 </body>
 </html>
