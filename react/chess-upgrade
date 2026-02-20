@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>React Chess Enhanced</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --text: #111;
+      --board-light: #f0d9b5;
+      --board-dark: #b58863;
+      --accent: #1e3a5f;
+    }
+
+    .app.dark {
+      --bg: #111;
+      --text: #f5f5f5;
+      --board-light: #b0c4de;
+      --board-dark: #1e3a5f;
+      --accent: #ffcc00;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .top-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 1px solid #888;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .layout {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .board-container {
+      position: relative;
+    }
+
+    .board {
+      position: relative;
+      width: 512px;
+      height: 512px;
+      border: 4px solid var(--accent);
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    .square {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      user-select: none;
+      transition: background-color 0.15s ease;
+    }
+
+    .square.light {
+      background-color: var(--board-light);
+    }
+
+    .square.dark {
+      background-color: var(--board-dark);
+    }
+
+    .square.selected {
+      outline: 3px solid yellow;
+      outline-offset: -3px;
+    }
+
+    .square.legal-move {
+      box-shadow: inset 0 0 0 4px rgba(0, 255, 0, 0.5);
+    }
+
+    .square.capture {
+      box-shadow: inset 0 0 0 4px rgba(255, 0, 0, 0.6);
+    }
+
+    .square.king-check {
+      box-shadow: inset 0 0 0 4px rgba(255, 0, 0, 0.9);
+    }
+
+    .piece {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      cursor: grab;
+      transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+    }
+
+    .piece.dragging {
+      opacity: 0.4;
+    }
+
+    .sidebar {
+      min-width: 260px;
+      max-width: 320px;
+      background: rgba(0,0,0,0.03);
+      border-radius: 8px;
+      padding: 10px 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    }
+
+    .sidebar h3 {
+      margin-top: 0;
+      margin-bottom: 6px;
+    }
+
+    .status {
+      margin-bottom: 8px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    .status.normal {
+      background: rgba(0,0,0,0.05);
+    }
+
+    .status.check {
+      background: rgba(255, 215, 0, 0.2);
+      border: 1px solid gold;
+    }
+
+    .status.mate {
+      background: rgba(255, 0, 0, 0.2);
+      border: 1px solid red;
+    }
+
+    .status.stalemate {
+      background: rgba(135, 206, 235, 0.2);
+      border: 1px solid skyblue;
+    }
+
+    .moves-list {
+      max-height: 260px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      padding-top: 6px;
+      margin-top: 6px;
+    }
+
+    .moves-list ol {
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    .moves-list li {
+      margin-bottom: 2px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .tagline {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      opacity: 0.8;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+
+const { useState, useEffect, useMemo } = React;
+
+const PIECE_UNICODE = {
+  wP: "♙", wR: "♖", wN: "♘", wB: "♗", wQ: "♕", wK: "♔",
+  bP: "♟", bR: "♜", bN: "♞", bB: "♝", bQ: "♛", bK: "♚",
+};
+
+function createInitialBoard() {
+  const emptyRow = Array(8).fill(null);
+  const board = [];
+  board.push([
+    { type: "R", color: "b" },
+    { type: "N", color: "b" },
+    { type: "B", color: "b" },
+    { type: "Q", color: "b" },
+    { type: "K", color: "b" },
+    { type: "B", color: "b" },
+    { type: "N", color: "b" },
+    { type: "R", color: "b" },
+  ]);
+  board.push(Array(8).fill({ type: "P", color: "b" }));
+  for (let i = 0; i < 4; i++) board.push([...emptyRow]);
+  board.push(Array(8).fill({ type: "P", color: "w" }));
+  board.push([
+    { type: "R", color: "w" },
+    { type: "N", color: "w" },
+    { type: "B", color: "w" },
+    { type: "Q", color: "w" },
+    { type: "K", color: "w" },
+    { type: "B", color: "w" },
+    { type: "N", color: "w" },
+    { type: "R", color: "w" },
+  ]);
+  return board;
+}
+
+function cloneBoard(board) {
+  return board.map(row => row.map(cell => cell ? { ...cell } : null));
+}
+
+function inBounds(r, c) {
+  return r >= 0 && r < 8 && c >= 0 && c < 8;
+}
+
+// Simplified but piece-correct move generator (no castling/en passant/promotion UI)
+function generateMoves(board, from, color) {
+  const [fr, fc] = from;
+  const piece = board[fr][fc];
+  if (!piece || piece.color !== color) return [];
+  const moves = [];
+  const dir = piece.color === "w" ? -1 : 1;
+
+  const addMove = (r, c, captureOnly = false) => {
+    if (!inBounds(r, c)) return;
+    const target = board[r][c];
+    if (target) {
+      if (target.color !== color) moves.push({ to: [r, c], capture: true });
+    } else if (!captureOnly) {
+      moves.push({ to: [r, c], capture: false });
+    }
+  };
+
+  switch (piece.type) {
+    case "P": {
+      const nr = fr + dir;
+      if (inBounds(nr, fc) && !board[nr][fc]) {
+        moves.push({ to: [nr, fc], capture: false });
+      }
+      addMove(fr + dir, fc - 1, true);
+      addMove(fr + dir, fc + 1, true);
+      break;
+    }
+    case "N": {
+      const deltas = [
+        [2, 1], [2, -1], [-2, 1], [-2, -1],
+        [1, 2], [1, -2], [-1, 2], [-1, -2],
+      ];
+      deltas.forEach(([dr, dc]) => addMove(fr + dr, fc + dc));
+      break;
+    }
+    case "B":
+    case "R":
+    case "Q": {
+      const dirs = [];
+      if (piece.type === "B" || piece.type === "Q") {
+        dirs.push([1,1],[1,-1],[-1,1],[-1,-1]);
+      }
+      if (piece.type === "R" || piece.type === "Q") {
+        dirs.push([1,0],[-1,0],[0,1],[0,-1]);
+      }
+      dirs.forEach(([dr, dc]) => {
+        let r = fr + dr, c = fc + dc;
+        while (inBounds(r, c)) {
+          const target = board[r][c];
+          if (!target) {
+            moves.push({ to: [r, c], capture: false });
+          } else {
+            if (target.color !== color) {
+              moves.push({ to: [r, c], capture: true });
+            }
+            break;
+          }
+          r += dr; c += dc;
+        }
+      });
+      break;
+    }
+    case "K": {
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          addMove(fr + dr, fc + dc);
+        }
+      }
+      break;
+    }
+    default:
+      break;
+  }
+
+  return moves;
+}
+
+function findKing(board, color) {
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const p = board[r][c];
+      if (p && p.type === "K" && p.color === color) return [r, c];
+    }
+  }
+  return null;
+}
+
+function isSquareAttacked(board, square, byColor) {
+  const [kr, kc] = square;
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const p = board[r][c];
+      if (p && p.color === byColor) {
+        const moves = generateMoves(board, [r, c], byColor);
+        if (moves.some(m => m.to[0] === kr && m.to[1] === kc)) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function makeMoveOnBoard(board, from, to) {
+  const newBoard = cloneBoard(board);
+  const [fr, fc] = from;
+  const [tr, tc] = to;
+  newBoard[tr][tc] = newBoard[fr][fc];
+  newBoard[fr][fc] = null;
+  return newBoard;
+}
+
+function getAllLegalMoves(board, color) {
+  const moves = [];
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const p = board[r][c];
+      if (p && p.color === color) {
+        const pseudo = generateMoves(board, [r, c], color);
+        pseudo.forEach(m => {
+          const nb = makeMoveOnBoard(board, [r, c], m.to);
+          const kingPos = findKing(nb, color);
+          if (!kingPos) return;
+          if (!isSquareAttacked(nb, kingPos, color === "w" ? "b" : "w")) {
+            moves.push({ from: [r, c], to: m.to, capture: m.capture });
+          }
+        });
+      }
+    }
+  }
+  return moves;
+}
+
+function getGameStatus(board, turn) {
+  const kingPos = findKing(board, turn);
+  if (!kingPos) return "mate";
+  const inCheck = isSquareAttacked(board, kingPos, turn === "w" ? "b" : "w");
+  const legalMoves = getAllLegalMoves(board, turn);
+  if (legalMoves.length === 0) {
+    return inCheck ? "mate" : "stalemate";
+  }
+  return inCheck ? "check" : "normal";
+}
+
+function squareToAlgebraic([r, c]) {
+  const file = String.fromCharCode("a".charCodeAt(0) + c);
+  const rank = 8 - r;
+  return file + rank;
+}
+
+function App() {
+  const [theme, setTheme] = useState("light");
+  const [history, setHistory] = useState([createInitialBoard()]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [turn, setTurn] = useState("w");
+  const [selected, setSelected] = useState(null);
+  const [legalMoves, setLegalMoves] = useState([]);
+  const [moveHistory, setMoveHistory] = useState([]);
+  const [draggingFrom, setDraggingFrom] = useState(null);
+  const [replayIndex, setReplayIndex] = useState(null);
+  const [vsComputer, setVsComputer] = useState(true);
+
+  const board = useMemo(
+    () => (replayIndex !== null ? history[replayIndex] : history[currentIndex]),
+    [history, currentIndex, replayIndex]
+  );
+
+  const status = useMemo(
+    () => getGameStatus(board, turn),
+    [board, turn]
+  );
+
+  const moveSound = useMemo(() => new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"), []);
+  const captureSound = useMemo(() => new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"), []);
+  const checkSound = useMemo(() => new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg"), []);
+
+  useEffect(() => {
+    if (status === "check") {
+      checkSound.currentTime = 0;
+      checkSound.play().catch(() => {});
+    }
+  }, [status, checkSound]);
+
+  useEffect(() => {
+    if (!vsComputer) return;
+    if (turn === "b" && replayIndex === null) {
+      const legal = getAllLegalMoves(board, "b");
+      if (legal.length === 0) return;
+      const move = legal[Math.floor(Math.random() * legal.length)];
+      setTimeout(() => {
+        applyMove(move.from, move.to, move.capture);
+      }, 500);
+    }
+  }, [turn, board, vsComputer, replayIndex]);
+
+  useEffect(() => {
+    if (replayIndex === null) return;
+    if (replayIndex >= history.length - 1) {
+      setTimeout(() => setReplayIndex(null), 600);
+      return;
+    }
+    const id = setTimeout(() => {
+      setReplayIndex(i => i + 1);
+    }, 800);
+    return () => clearTimeout(id);
+  }, [replayIndex, history.length]);
+
+  function applyMove(from, to, captureFlag = false) {
+    const newBoard = makeMoveOnBoard(board, from, to);
+    const newHistory = history.slice(0, currentIndex + 1).concat([newBoard]);
+    setHistory(newHistory);
+    setCurrentIndex(currentIndex + 1);
+    setSelected(null);
+    setLegalMoves([]);
+    const fromAlg = squareToAlgebraic(from);
+    const toAlg = squareToAlgebraic(to);
+    const notation = `${fromAlg}-${toAlg}${captureFlag ? "x" : ""}`;
+    setMoveHistory(prev => [...prev, notation]);
+    const isCapture = !!board[to[0]][to[1]];
+    if (isCapture) {
+      captureSound.currentTime = 0;
+      captureSound.play().catch(() => {});
+    } else {
+      moveSound.currentTime = 0;
+      moveSound.play().catch(() => {});
+    }
+    setTurn(t => (t === "w" ? "b" : "w"));
+  }
+
+  function handleSquareClick(r, c) {
+    if (replayIndex !== null) return;
+    const piece = board[r][c];
+    if (selected && selected[0] === r && selected[1] === c) {
+      setSelected(null);
+      setLegalMoves([]);
+      return;
+    }
+    if (selected) {
+      const move = legalMoves.find(m => m.to[0] === r && m.to[1] === c);
+      if (move) {
+        applyMove(selected, move.to, move.capture);
+        return;
+      }
+    }
+    if (piece && piece.color === turn) {
+      const pseudo = generateMoves(board, [r, c], turn);
+      const legal = [];
+      pseudo.forEach(m => {
+        const nb = makeMoveOnBoard(board, [r, c], m.to);
+        const kingPos = findKing(nb, turn);
+        if (!kingPos) return;
+        if (!isSquareAttacked(nb, kingPos, turn === "w" ? "b" : "w")) {
+          legal.push(m);
+        }
+      });
+      setSelected([r, c]);
+      setLegalMoves(legal);
+    } else {
+      setSelected(null);
+      setLegalMoves([]);
+    }
+  }
+
+  function handleDragStart(e, r, c) {
+    if (replayIndex !== null) return;
+    const piece = board[r][c];
+    if (!piece || piece.color !== turn) {
+      e.preventDefault();
+      return;
+    }
+    setDraggingFrom([r, c]);
+    const pseudo = generateMoves(board, [r, c], turn);
+    const legal = [];
+    pseudo.forEach(m => {
+      const nb = makeMoveOnBoard(board, [r, c], m.to);
+      const kingPos = findKing(nb, turn);
+      if (!kingPos) return;
+      if (!isSquareAttacked(nb, kingPos, turn === "w" ? "b" : "w")) {
+        legal.push(m);
+      }
+    });
+    setSelected([r, c]);
+    setLegalMoves(legal);
+  }
+
+  function handleDragEnd() {
+    setDraggingFrom(null);
+  }
+
+  function handleDrop(e, r, c) {
+    e.preventDefault();
+    if (!draggingFrom) return;
+    const move = legalMoves.find(m => m.to[0] === r && m.to[1] === c);
+    if (move) {
+      applyMove(draggingFrom, move.to, move.capture);
+    }
+    setDraggingFrom(null);
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+  }
+
+  function undo() {
+    if (currentIndex === 0 || replayIndex !== null) return;
+    setCurrentIndex(i => i - 1);
+    setTurn(t => (t === "w" ? "b" : "w"));
+    setSelected(null);
+    setLegalMoves([]);
+    setMoveHistory(m => m.slice(0, m.length - 1));
+  }
+
+  function redo() {
+    if (currentIndex >= history.length - 1 || replayIndex !== null) return;
+    setCurrentIndex(i => i + 1);
+    setTurn(t => (t === "w" ? "b" : "w"));
+  }
+
+  function startReplay() {
+    if (history.length <= 1) return;
+    setReplayIndex(0);
+    setSelected(null);
+    setLegalMoves([]);
+  }
+
+  const kingInCheckSquare = useMemo(() => {
+    if (status !== "check") return null;
+    const kingPos = findKing(board, turn);
+    return kingPos;
+  }, [status, board, turn]);
+
+  return (
+    <div className={`app ${theme}`}>
+      <h1>React Chess (Enhanced)</h1>
+      <div className="top-bar">
+        <button onClick={() => setTheme(t => (t === "light" ? "dark" : "light"))}>
+          Toggle {theme === "light" ? "Dark" : "Light"} Mode
+        </button>
+        <button onClick={() => setVsComputer(v => !v)}>
+          vs Computer: {vsComputer ? "On" : "Off"}
+        </button>
+        <button onClick={undo} disabled={currentIndex === 0 || replayIndex !== null}>
+          Undo
+        </button>
+        <button onClick={redo} disabled={currentIndex >= history.length - 1 || replayIndex !== null}>
+          Redo
+        </button>
+        <button onClick={startReplay} disabled={history.length <= 1 || replayIndex !== null}>
+          Replay Game
+        </button>
+      </div>
+
+      <div className="layout">
+        <div className="board-container">
+          <div className="board">
+            {board.map((row, r) =>
+              row.map((cell, c) => {
+                const isLight = (r + c) % 2 === 0;
+                const isSelected =
+                  selected && selected[0] === r && selected[1] === c;
+                const legal = legalMoves.find(m => m.to[0] === r && m.to[1] === c);
+                const isLegalMove = !!legal;
+                const isCapture = legal && legal.capture;
+                const isKingCheck =
+                  kingInCheckSquare &&
+                  kingInCheckSquare[0] === r &&
+                  kingInCheckSquare[1] === c;
+
+                const squareClasses = [
+                  "square",
+                  isLight ? "light" : "dark",
+                  isSelected ? "selected" : "",
+                  isLegalMove ? "legal-move" : "",
+                  isCapture ? "capture" : "",
+                  isKingCheck ? "king-check" : "",
+                ].join(" ");
+
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    className={squareClasses}
+                    style={{
+                      left: c * 64,
+                      top: r * 64,
+                    }}
+                    onClick={() => handleSquareClick(r, c)}
+                    onDragOver={handleDragOver}
+                    onDrop={e => handleDrop(e, r, c)}
+                  >
+                  </div>
+                );
+              })
+            )}
+
+            {board.map((row, r) =>
+              row.map((cell, c) => {
+                if (!cell) return null;
+                const key = `p-${r}-${c}-${cell.type}-${cell.color}`;
+                const unicode = PIECE_UNICODE[cell.color + cell.type];
+                return (
+                  <div
+                    key={key}
+                    className={
+                      "piece" +
+                      (draggingFrom &&
+                      draggingFrom[0] === r &&
+                      draggingFrom[1] === c
+                        ? " dragging"
+                        : "")
+                    }
+                    style={{
+                      transform: `translate(${c * 64}px, ${r * 64}px)`,
+                    }}
+                    draggable={replayIndex === null}
+                    onDragStart={e => handleDragStart(e, r, c)}
+                    onDragEnd={handleDragEnd}
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleSquareClick(r, c);
+                    }}
+                  >
+                    {unicode}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        <div className="sidebar">
+          <h3>Game Info</h3>
+          <div
+            className={
+              "status " +
+              (status === "normal"
+                ? "normal"
+                : status === "check"
+                ? "check"
+                : status === "mate"
+                ? "mate"
+                : "stalemate")
+            }
+          >
+            {replayIndex !== null
+              ? "Replaying game..."
+              : status === "normal"
+              ? `Turn: ${turn === "w" ? "White" : "Black"}`
+              : status === "check"
+              ? `Check! ${turn === "w" ? "White" : "Black"} to move`
+              : status === "mate"
+              ? `Checkmate! ${turn === "w" ? "Black" : "White"} wins`
+              : "Stalemate"}
+          </div>
+
+          <div className="controls">
+            <span style={{ fontSize: "0.85rem" }}>
+              Pieces: Unicode • AI: random legal move
+            </span>
+          </div>
+
+          <div className="moves-list">
+            <h3>Move History</h3>
+            <ol>
+              {moveHistory.map((m, i) => (
+                <li key={i}>{m}</li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div className="tagline">
+        React Chess demo with highlighting, history, undo/redo, drag‑drop, AI, themes, sounds, animations, and replay.
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
+</script>
+</body>
+</html>
