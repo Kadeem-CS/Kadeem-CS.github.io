@@ -1,77 +1,61 @@
 body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f4f4f4;
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #222;
-  color: #eee;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   padding: 20px;
 }
 
-.board {
-  display: grid;
-  width: 400px;
-  height: 400px;
+h2 {
+  margin-bottom: 5px;
 }
 
-.row {
-  display: flex;
-}
-
-.square {
-  width: 64px;
-  height: 64px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 40px;
-  cursor: pointer;
-  position: relative;
-  user-select: none;
-}
-
-.light { background: #f0d9b5; }
-.dark  { background: #b58863; }
-
-.selected {
-  outline: 3px solid yellow;
-  outline-offset: -3px;
-}
-
-.legal::after {
-  content: "";
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(0,255,0,0.5);
-  position: absolute;
-}
-
-.check {
-  box-shadow: inset 0 0 0 4px red;
-}
-
-#controls {
+h3 {
   margin-top: 10px;
-  display: flex;
-  gap: 10px;
 }
 
 button {
-  padding: 6px 12px;
-  background: #333;
-  border: 1px solid #666;
-  color: #eee;
+  margin: 5px;
+  padding: 8px 12px;
+  border: none;
+  background-color: #333;
+  color: white;
   cursor: pointer;
+  border-radius: 4px;
 }
 
-#history {
-  margin-top: 20px;
-  width: 300px;
-  background: #333;
+button:hover {
+  background-color: #555;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  display: flex;
+  gap: 20px;
+}
+
+.sidebar {
+  width: 200px;
+}
+
+.move-history {
+  background: white;
   padding: 10px;
-  border-radius: 6px;
+  border-radius: 5px;
   max-height: 300px;
   overflow-y: auto;
+}
+
+.captured {
+  background: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.chessboard-wrapper {
+  width: 500px;
 }
