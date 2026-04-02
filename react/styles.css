@@ -1,0 +1,157 @@
+:root {
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #d1d5db;
+  --accent: #2563eb;
+  --accent-soft: #eff6ff;
+  --success-bg: #ecfdf5;
+  --success-text: #065f46;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+}
+
+.page {
+  max-width: 980px;
+  margin: 40px auto;
+  padding: 0 20px 60px;
+}
+
+.hero,
+.chapter,
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.hero {
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.hero h1 {
+  margin: 0 0 10px;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.chapter {
+  padding: 24px;
+}
+
+.chapter h2,
+.chapter h3 {
+  margin-top: 0;
+}
+
+.fact-inline {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.fact-block {
+  margin: 16px 0 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  background: #fcfcff;
+}
+
+.fact-statement {
+  margin: 0 0 8px;
+}
+
+.fact-meta {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.fact-meta a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.fact-meta a:hover {
+  text-decoration: underline;
+}
+
+.status {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--success-bg);
+  color: var(--success-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+details {
+  margin-top: 10px;
+  border-top: 1px dashed var(--border);
+  padding-top: 10px;
+}
+
+summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #111827;
+  color: #f9fafb;
+  padding: 12px;
+  border-radius: 10px;
+  overflow: auto;
+  font-size: 0.9rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.panel {
+  padding: 18px;
+}
+
+.source-list {
+  padding-left: 18px;
+}
+
+.source-list li {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
