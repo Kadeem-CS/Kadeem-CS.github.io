@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CDN Playable Chess</title>
+    <title>React Chess Game</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -28,7 +28,7 @@
                 'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔'
             };
 
-            const board = game.board();
+            const board = React.useMemo(() => game.board(), [game]);;
 
             function getSquareLabel(i, j) {
                 return String.fromCharCode(97 + j) + (8 - i);
@@ -44,7 +44,7 @@
         const move = gameCopy.move({
             from: selectedSquare,
             to: square,
-            promotion: 'q'
+            const promotion = prompt("Promote to (q, r, b, n):", "q");
         });
 
         if (move) {
@@ -109,7 +109,7 @@
                                         key={squareLabel}
                                         onClick={() => handleSquareClick(squareLabel)}
                                         className={`w-12 h-12 md:w-16 md:h-16 flex items-center justify-center text-4xl cursor-pointer relative
-                                            ${isDark ? 'bg-slate-700' : 'bg-slate-400'}
+                                            ${isDark ? 'bg-green-700' : 'bg-green-200'}
                                             ${isSelected ? 'bg-yellow-200/50' : ''}
                                         `}
                                     >
@@ -136,7 +136,23 @@
                 </div>
             );
         }
-
+            const [lastMove, setLastMove] = useState(null);
+            setLastMove({ from: move.from, to: move.to });
+            const isLastMove = lastMove && (squareLabel === lastMove.from || squareLabel === lastMove.to);
+            const [captured, setCaptured] = useState([]);
+            ${piece && piece.color !== game.turn() ? 'cursor-not-allowed opacity-70' : ''}
+            className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16"
+            const undoMove = () => {
+    const gameCopy = new Chess(game.fen());
+    gameCopy.undo();
+    setGame(gameCopy);
+};
+            <button onClick={undoMove}>Undo</button>
+            const history = game.history();
+            <div className="text-sm max-h-32 overflow-auto">
+    {history.join(', ')}
+</div>
+            
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<ChessApp />);
     </script>
