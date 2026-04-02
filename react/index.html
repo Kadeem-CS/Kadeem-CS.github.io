@@ -1,37 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Full JavaScript Chess Engine</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>React Chess Enhanced</title>
+
+  <!-- React -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Chess Libraries -->
+  <script src="https://unpkg.com/chess.js@1.0.0/dist/chess.js"></script>
+  <script src="https://unpkg.com/react-chessboard@4.3.1/dist/react-chessboard.umd.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-
-  <h1>JavaScript Chess Engine</h1>
-
-  <div id="status"></div>
-
-  <div id="board"></div>
-
-  <div id="controls">
-    <button id="undoBtn">Undo</button>
-    <button id="redoBtn">Redo</button>
-    <button id="aiBtn">Toggle AI</button>
-    <button id="newGameBtn">New Game</button>
-  </div>
   <div id="root"></div>
-  <div id="history"></div>
 
-  <script src="js/board.js"></script>
-  <script src="js/moves.js"></script>
-  <script src="js/rules.js"></script>
-  <script src="js/ai.js"></script>
-  <script src="js/history.js"></script>
-  <script src="js/dragdrop.js"></script>
-  <script src="js/render.js"></script>
-  <script src="js/main.js"></script>
-
+  <script type="text/babel" src="App.js"></script>
 </body>
 </html>
