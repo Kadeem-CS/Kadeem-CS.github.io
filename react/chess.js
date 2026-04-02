@@ -2,7 +2,7 @@ const PIECES = {
   wP: "♙", wR: "♖", wN: "♘", wB: "♗", wQ: "♕", wK: "♔",
   bP: "♟", bR: "♜", bN: "♞", bB: "♝", bQ: "♛", bK: "♚",
 };
-
+ReactDOM.render(<App />, document.getElementById("root"));
 function createInitialBoard() {
   const empty = Array(8).fill(null);
   const board = [];
