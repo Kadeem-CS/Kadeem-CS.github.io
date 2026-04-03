@@ -5,14 +5,13 @@ function ChessApp() {
     const [game, setGame] = useState(new Chess());
     const [selectedSquare, setSelectedSquare] = useState(null);
     const [optionSquares, setOptionSquares] = useState([]);
-    const [lastMove, setLastMove] = useState(null);
 
     const pieceSymbols = {
-        'p': '♟','r': '♜','n': '♞','b': '♝','q': '♛','k': '♚',
-        'P': '♙','R': '♖','N': '♘','B': '♗','Q': '♕','K': '♔'
+        p:'♟',r:'♜',n:'♞',b:'♝',q:'♛',k:'♚',
+        P:'♙',R:'♖',N:'♘',B:'♗',Q:'♕',K:'♔'
     };
 
-    const board = React.useMemo(() => game.board(), [game]);
+    const board = game.board();
 
     function getSquareLabel(i, j) {
         return String.fromCharCode(97 + j) + (8 - i);
@@ -22,17 +21,14 @@ function ChessApp() {
         const gameCopy = new Chess(game.fen());
 
         if (selectedSquare) {
-            const promotion = prompt("Promote to (q, r, b, n):", "q");
-
             const move = gameCopy.move({
                 from: selectedSquare,
                 to: square,
-                promotion: promotion || 'q'
+                promotion: 'q'
             });
 
             if (move) {
                 setGame(gameCopy);
-                setLastMove({ from: move.from, to: move.to });
                 setSelectedSquare(null);
                 setOptionSquares([]);
                 return;
@@ -50,70 +46,34 @@ function ChessApp() {
         }
     }
 
-    const resetGame = () => {
-        setGame(new Chess());
-        setSelectedSquare(null);
-        setOptionSquares([]);
-        setLastMove(null);
-    };
-
-    const undoMove = () => {
-        const gameCopy = new Chess(game.fen());
-        gameCopy.undo();
-        setGame(gameCopy);
-    };
-
-    const status = () => {
-        if (game.in_checkmate()) return `Checkmate!`;
-        if (game.in_draw()) return "Draw!";
-        return `${game.turn() === 'w' ? "White" : "Black"} Turn`;
-    };
-
     return (
         <div className="flex flex-col items-center gap-6">
-            <h1 className="text-3xl font-bold text-yellow-500">React Chess</h1>
-            <p>{status()}</p>
+            <h1 className="text-3xl text-yellow-500">Chess</h1>
 
-            <div className="grid grid-cols-8 border-4 border-gray-700">
+            <div className="grid grid-cols-8">
                 {board.map((row, i) =>
                     row.map((square, j) => {
                         const label = getSquareLabel(i, j);
-                        const isDark = (i + j) % 2 === 1;
-                        const isSelected = selectedSquare === label;
-                        const isOption = optionSquares.includes(label);
-                        const isLast =
-                            lastMove &&
-                            (label === lastMove.from || label === lastMove.to);
+                        const isDark = (i + j) % 2;
 
                         return (
                             <div
                                 key={label}
                                 onClick={() => handleSquareClick(label)}
-                                className={`w-12 h-12 flex items-center justify-center text-3xl
-                                ${isDark ? 'bg-green-700' : 'bg-green-200'}
-                                ${isSelected ? 'bg-yellow-300' : ''}
-                                ${isLast ? 'bg-blue-400' : ''}`}
+                                className={`w-12 h-12 flex items-center justify-center
+                                ${isDark ? 'bg-green-700' : 'bg-green-200'}`}
                             >
                                 {square
                                     ? pieceSymbols[
-                                          square.color === 'w'
-                                              ? square.type.toUpperCase()
-                                              : square.type
+                                        square.color === 'w'
+                                        ? square.type.toUpperCase()
+                                        : square.type
                                       ]
                                     : ''}
                             </div>
                         );
                     })
                 )}
-            </div>
-
-            <div className="flex gap-4">
-                <button onClick={resetGame} className="bg-red-600 px-4 py-2 rounded">
-                    New Game
-                </button>
-                <button onClick={undoMove} className="bg-blue-600 px-4 py-2 rounded">
-                    Undo
-                </button>
             </div>
         </div>
     );
