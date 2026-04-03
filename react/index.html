@@ -12,81 +12,103 @@
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
 
-    <div id="root"></div>
+<div id="root"></div>
 
-    <script type="text/babel">
-    const { useState } = React;
+<script type="text/babel">
+const { useState } = React;
 
-    function ChessApp() {
-        const [game, setGame] = useState(new Chess());
-        const [selectedSquare, setSelectedSquare] = useState(null);
-        const [optionSquares, setOptionSquares] = useState([]);
+function ChessApp() {
+    const [game, setGame] = useState(new Chess());
+    const [selectedSquare, setSelectedSquare] = useState(null);
+    const [optionSquares, setOptionSquares] = useState([]);
 
-        const pieceSymbols = {
-            p:'♟', r:'♜', n:'♞', b:'♝', q:'♛', k:'♚',
-            P:'♙', R:'♖', N:'♘', B:'♗', Q:'♕', K:'♔'
-        };
+    const pieceSymbols = {
+        p:'♟', r:'♜', n:'♞', b:'♝', q:'♛', k:'♚',
+        P:'♙', R:'♖', N:'♘', B:'♗', Q:'♕', K:'♔'
+    };
 
-        const board = game.board();
+    const board = game.board();
 
-        function getSquareLabel(i, j) {
-            return String.fromCharCode(97 + j) + (8 - i);
-        }
+    function getSquareLabel(i, j) {
+        return String.fromCharCode(97 + j) + (8 - i);
+    }
 
-        function handleSquareClick(square) {
-            const gameCopy = new Chess(game.fen());
+    function handleSquareClick(square) {
+        const gameCopy = new Chess(game.fen());
 
-            if (selectedSquare) {
-                const move = gameCopy.move({
-                    from: selectedSquare,
-                    to: square,
-                    promotion: 'q'
-                });
+        if (selectedSquare) {
+            const move = gameCopy.move({
+                from: selectedSquare,
+                to: square,
+                promotion: 'q'
+            });
 
-                if (move) {
-                    setGame(gameCopy);
-                    setSelectedSquare(null);
-                    setOptionSquares([]);
-                    return;
-                }
-            }
-
-            const piece = game.get(square);
-            if (piece && piece.color === game.turn()) {
-                setSelectedSquare(square);
-                const moves = game.moves({ square, verbose: true });
-                setOptionSquares(moves.map(m => m.to));
-            } else {
+            if (move) {
+                setGame(gameCopy);
                 setSelectedSquare(null);
                 setOptionSquares([]);
+                return;
             }
         }
 
-        const resetGame = () => {
-            setGame(new Chess());
+        const piece = game.get(square);
+        if (piece && piece.color === game.turn()) {
+            setSelectedSquare(square);
+            const moves = game.moves({ square, verbose: true });
+            setOptionSquares(moves.map(m => m.to));
+        } else {
             setSelectedSquare(null);
             setOptionSquares([]);
-        };
+        }
+    }
 
-        const undoMove = () => {
-            const gameCopy = new Chess(game.fen());
-            gameCopy.undo();
-            setGame(gameCopy);
-        };
+    const resetGame = () => {
+        setGame(new Chess());
+        setSelectedSquare(null);
+        setOptionSquares([]);
+    };
 
-        const status = () => {
-            if (game.in_checkmate()) return `Checkmate! ${game.turn() === 'w' ? 'Black' : 'White'} wins.`;
-            if (game.in_draw()) return "Draw!";
-            return `${game.turn() === 'w' ? "White's" : "Black's"} Turn`;
-        };
+    const undoMove = () => {
+        const gameCopy = new Chess(game.fen());
+        gameCopy.undo();
+        setGame(gameCopy);
+    };
 
-        return (
-            <div className="flex flex-col items-center gap-6">
-                <h1 className="text-3xl font-bold text-yellow-500">React Chess Game</h1>
-                <p className={`text-lg font-medium ${game.in_check() ? 'text-red-500 animate-pulse' : 'text-gray-300'}`}>
-                    {status()}
-                </p>
+    const status = () => {
+        if (game.in_checkmate()) return `Checkmate! ${game.turn() === 'w' ? 'Black' : 'White'} wins.`;
+        if (game.in_draw()) return "Draw!";
+        return `${game.turn() === 'w' ? "White's" : "Black's"} Turn`;
+    };
 
+    // Captured pieces
+    const getCapturedPieces = (color) => {
+        const allMoves = game.history({ verbose: true });
+        const captured = allMoves
+            .filter(m => m.captured)
+            .map(m => (m.captured === 'p' ? '♟' :
+                       m.captured === 'r' ? '♜' :
+                       m.captured === 'n' ? '♞' :
+                       m.captured === 'b' ? '♝' :
+                       m.captured === 'q' ? '♛' :
+                       m.captured === 'k' ? '♚' : ''))
+            .filter((_, i) => allMoves[i].color !== color); // opponent captured pieces
+        return captured;
+    };
+
+    const whiteCaptured = getCapturedPieces('w');
+    const blackCaptured = getCapturedPieces('b');
+
+    const moveHistory = game.history({ verbose: true }).map(m => m.san);
+
+    return (
+        <div className="flex flex-col items-center gap-6">
+            <h1 className="text-3xl font-bold text-yellow-500">React Chess Game</h1>
+            <p className={`text-lg font-medium ${game.in_check() ? 'text-red-500 animate-pulse' : 'text-gray-300'}`}>
+                {status()}
+            </p>
+
+            {/* Chessboard and side panels */}
+            <div className="flex gap-6">
                 {/* Chessboard */}
                 <div className="grid grid-cols-8 border-4 border-yellow-500 shadow-2xl">
                     {board.map((row, i) =>
@@ -105,7 +127,6 @@
                                         ${isSelected ? 'ring-4 ring-yellow-400' : ''}
                                     `}
                                 >
-                                    {/* Legal move indicator */}
                                     {isOption && (
                                         <div className="absolute w-4 h-4 bg-black/30 rounded-full z-0"></div>
                                     )}
@@ -118,18 +139,35 @@
                     )}
                 </div>
 
-                {/* Buttons */}
-                <div className="flex gap-4 mt-4">
-                    <button onClick={resetGame} className="bg-red-600 hover:bg-red-500 px-6 py-2 rounded-lg font-bold shadow-lg active:scale-95 transition-all">New Game</button>
-                    <button onClick={undoMove} className="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg font-bold shadow-lg active:scale-95 transition-all">Undo</button>
+                {/* Side Panel */}
+                <div className="flex flex-col gap-4 w-40 text-black">
+                    <div className="bg-gray-200 p-2 rounded">
+                        <h2 className="font-bold text-center mb-1">White Captured</h2>
+                        <div className="flex flex-wrap">{whiteCaptured}</div>
+                    </div>
+                    <div className="bg-gray-200 p-2 rounded">
+                        <h2 className="font-bold text-center mb-1">Black Captured</h2>
+                        <div className="flex flex-wrap">{blackCaptured}</div>
+                    </div>
+                    <div className="bg-gray-200 p-2 rounded max-h-48 overflow-auto">
+                        <h2 className="font-bold text-center mb-1">Move History</h2>
+                        <ol className="text-sm list-decimal ml-4">
+                            {moveHistory.map((m, i) => <li key={i}>{m}</li>)}
+                        </ol>
+                    </div>
+                    <div className="flex flex-col gap-2 mt-2">
+                        <button onClick={resetGame} className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-bold shadow-lg">New Game</button>
+                        <button onClick={undoMove} className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded font-bold shadow-lg">Undo</button>
+                    </div>
                 </div>
-
             </div>
-        );
-    }
+        </div>
+    );
+}
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<ChessApp />);
-    </script>
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<ChessApp />);
+</script>
+
 </body>
 </html>
