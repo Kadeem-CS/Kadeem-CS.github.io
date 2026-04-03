@@ -21,9 +21,9 @@ function ChessApp() {
   const [game, setGame] = useState(new Chess());
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [optionSquares, setOptionSquares] = useState([]);
-  const [moveHistory, setMoveHistory] = useState([]);
   const [whiteCaptured, setWhiteCaptured] = useState([]);
   const [blackCaptured, setBlackCaptured] = useState([]);
+  const [numberedHistory, setNumberedHistory] = useState([]);
 
   const pieceSymbols = {
     p:'♟', r:'♜', n:'♞', b:'♝', q:'♛', k:'♚',
@@ -66,32 +66,39 @@ function ChessApp() {
   }
 
   const resetGame = () => {
-    const newGame = new Chess();
-    setGame(newGame);
+    setGame(new Chess());
     setSelectedSquare(null);
     setOptionSquares([]);
   };
 
   const undoMove = () => {
     const gameCopy = new Chess(game.fen());
-    gameCopy.undo(); // Undo last move
+    gameCopy.undo();
     setGame(gameCopy);
   };
 
-  // Update move history and captured pieces whenever game changes
   useEffect(() => {
     const history = game.history({ verbose: true });
-    setMoveHistory(history.map(m => m.san));
 
+    // Captured pieces
     const whiteCap = history
       .filter(m => m.captured && m.color === 'b')
       .map(m => pieceSymbols[m.captured.toUpperCase()]);
     const blackCap = history
       .filter(m => m.captured && m.color === 'w')
       .map(m => pieceSymbols[m.captured.toUpperCase()]);
-
     setWhiteCaptured(whiteCap);
     setBlackCaptured(blackCap);
+
+    // Numbered move history like PGN
+    const numbered = [];
+    for (let i = 0; i < history.length; i += 2) {
+      const moveNumber = Math.floor(i / 2) + 1;
+      const whiteMove = history[i]?.san || '';
+      const blackMove = history[i+1]?.san || '';
+      numbered.push(`${moveNumber}. ${whiteMove}${blackMove ? ' ' + blackMove : ''}`);
+    }
+    setNumberedHistory(numbered);
   }, [game]);
 
   const status = () => {
@@ -139,7 +146,7 @@ function ChessApp() {
         </div>
 
         {/* Side Panel */}
-        <div className="flex flex-col gap-4 w-44 text-black">
+        <div className="flex flex-col gap-4 w-52 text-black">
           <div className="bg-gray-200 p-2 rounded">
             <h2 className="font-bold text-center mb-1">White Captured</h2>
             <div className="flex flex-wrap">{whiteCaptured}</div>
@@ -148,10 +155,10 @@ function ChessApp() {
             <h2 className="font-bold text-center mb-1">Black Captured</h2>
             <div className="flex flex-wrap">{blackCaptured}</div>
           </div>
-          <div className="bg-gray-200 p-2 rounded max-h-48 overflow-auto">
+          <div className="bg-gray-200 p-2 rounded max-h-64 overflow-auto">
             <h2 className="font-bold text-center mb-1">Move History</h2>
             <ol className="text-sm list-decimal ml-4">
-              {moveHistory.map((m, i) => <li key={i}>{m}</li>)}
+              {numberedHistory.map((m, i) => <li key={i}>{m}</li>)}
             </ol>
           </div>
           <div className="flex flex-col gap-2 mt-2">
