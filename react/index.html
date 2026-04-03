@@ -72,15 +72,13 @@ function ChessApp() {
   };
 
   const undoMove = () => {
-    const gameCopy = new Chess(game.fen());
-    gameCopy.undo();
-    setGame(gameCopy);
+    game.undo(); // Undo directly
+    setGame(new Chess(game.fen())); // Trigger re-render
   };
 
   useEffect(() => {
     const history = game.history({ verbose: true });
 
-    // Captured pieces
     const whiteCap = history
       .filter(m => m.captured && m.color === 'b')
       .map(m => pieceSymbols[m.captured.toUpperCase()]);
@@ -90,7 +88,6 @@ function ChessApp() {
     setWhiteCaptured(whiteCap);
     setBlackCaptured(blackCap);
 
-    // Numbered move history like PGN
     const numbered = [];
     for (let i = 0; i < history.length; i += 2) {
       const moveNumber = Math.floor(i / 2) + 1;
@@ -115,7 +112,6 @@ function ChessApp() {
       </p>
 
       <div className="flex gap-6">
-        {/* Chessboard */}
         <div className="grid grid-cols-8 border-4 border-yellow-500 shadow-2xl">
           {board.map((row, i) =>
             row.map((square, j) => {
@@ -145,7 +141,6 @@ function ChessApp() {
           )}
         </div>
 
-        {/* Side Panel */}
         <div className="flex flex-col gap-4 w-52 text-black">
           <div className="bg-gray-200 p-2 rounded">
             <h2 className="font-bold text-center mb-1">White Captured</h2>
